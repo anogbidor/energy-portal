@@ -1,0 +1,12 @@
+{
+  "istanbul": {
+    "benzin": 100.99,
+    "motorin": 99.88,
+    "lpg": 88.77
+  },
+  "ankara": {
+    "benzin": 32.94,
+    "motorin": 31.68,
+    "lpg": 15.5
+  }
+}

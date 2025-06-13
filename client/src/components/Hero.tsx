@@ -4,6 +4,7 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid'
 import { useEffect, useRef, useState } from 'react'
+import { useLiveData } from '../hooks/useLiveData'
 
 export default function Hero() {
   const tickerRef = useRef<HTMLDivElement>(null)
@@ -11,16 +12,7 @@ export default function Hero() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isHoveringTicker, setIsHoveringTicker] = useState(false)
 
-  const tickerItems = [
-    { name: 'Benzin', price: 32.76, change: 2.3, unit: '₺/L' },
-    { name: 'LPG', price: 15.42, change: -0.8, unit: '₺/L' },
-    { name: 'Dolar', price: 32.15, change: 1.2, unit: '₺' },
-    { name: 'Euro', price: 34.89, change: -0.5, unit: '₺' },
-    { name: 'Elektrik', price: 3.12, change: 0.3, unit: '₺/kWh' },
-    { name: 'Doğal Gaz', price: 5.87, change: 1.2, unit: '₺/m³' },
-  ]
-
-  const duplicatedItems = [...tickerItems, ...tickerItems]
+  const { data, loading, error } = useLiveData()
 
   useEffect(() => {
     const tickerElement = tickerRef.current
@@ -55,9 +47,33 @@ export default function Hero() {
     'TÜPRAŞ',
   ]
 
+  if (loading) return <p className='text-center text-white'>Yükleniyor...</p>
+  if (error || !data)
+    return <p className='text-center text-red-400'>{error || 'Veri yok'}</p>
+
+  const tickerItems = [
+    {
+      name: 'Benzin',
+      price: data.fuelPrices.istanbul.benzin,
+      change: 2.3,
+      unit: '₺/L',
+    },
+    {
+      name: 'LPG',
+      price: data.fuelPrices.istanbul.lpg,
+      change: -0.8,
+      unit: '₺/L',
+    },
+    { name: 'Dolar', price: data.usdTry, change: 1.2, unit: '₺' },
+    { name: 'Euro', price: data.eurTry, change: -0.5, unit: '₺' },
+    { name: 'Elektrik', price: 3.12, change: 0.3, unit: '₺/kWh' },
+    { name: 'Doğal Gaz', price: 5.87, change: 1.2, unit: '₺/m³' },
+  ]
+
+  const duplicatedItems = [...tickerItems, ...tickerItems]
+
   return (
     <section className='bg-gradient-to-br from-blue-800 to-blue-600 text-white relative pb-28 overflow-hidden'>
-      {/* Animated background elements */}
       <div className='absolute inset-0 opacity-10'>
         <div className='absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
         <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
@@ -73,7 +89,6 @@ export default function Hero() {
           Türkiye'nin en güncel enerji fiyatları, haberleri ve analizleri
         </p>
 
-        {/* Search Bar */}
         <div className='mt-8 flex justify-center relative max-w-2xl mx-auto'>
           <div className='relative w-full'>
             <MagnifyingGlassIcon className='absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400' />
@@ -90,7 +105,6 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Filter Chips */}
         <div className='mt-8 flex flex-wrap justify-center gap-3'>
           {filters.map((filter) => (
             <button
@@ -109,7 +123,6 @@ export default function Hero() {
           ))}
         </div>
 
-        {/* Selected filter indicator */}
         {selectedFilter && (
           <div className='mt-4 animate-fade-in'>
             <p className='inline-flex items-center text-sm text-yellow-200 bg-white/10 px-4 py-2 rounded-full'>
@@ -127,17 +140,17 @@ export default function Hero() {
           </div>
         )}
 
-        {/* Stats Cards */}
         <div className='mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4'>
-          {tickerItems.slice(0, 6).map((item) => (
+          {tickerItems.map((item) => (
             <div
               key={item.name}
               className='bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-all duration-200 cursor-pointer hover:shadow-lg'
             >
               <div className='text-sm text-blue-100'>{item.name}</div>
               <div className='mt-1 text-xl font-bold'>
-                {item.price.toFixed(2)}
-                {item.unit}
+                {typeof item.price === 'number'
+                  ? `${item.price.toFixed(2)}${item.unit}`
+                  : '—'}
               </div>
               <div
                 className={`mt-1 text-xs font-medium inline-flex items-center ${
@@ -156,7 +169,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Live Ticker */}
       <div
         className='absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-900/90 to-blue-800/90 backdrop-blur-sm overflow-hidden border-t border-white/10'
         onMouseEnter={() => setIsHoveringTicker(true)}
@@ -182,7 +194,9 @@ export default function Hero() {
                   >
                     <span className='font-medium'>{item.name}</span>
                     <span className='mx-2 text-white/90'>
-                      {item.price.toFixed(2)}
+                      {typeof item.price === 'number'
+                        ? `${item.price.toFixed(2)}`
+                        : '—'}
                       <span className='text-white/60'>{item.unit}</span>
                     </span>
                     <span
@@ -204,9 +218,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
-     
-      
     </section>
   )
 }

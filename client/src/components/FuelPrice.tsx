@@ -1,15 +1,61 @@
-// 🔹 components/FuelPrice.tsx
+import { useLiveData } from '../hooks/useLiveData'
 import FuelPriceCard from './FuelPriceCard'
+import { ChartBarIcon, ClockIcon } from '@heroicons/react/24/solid'
 
 export default function FuelPrice() {
+  const { data, loading, error } = useLiveData()
+
+  if (loading) return <p>Yakıt fiyatları yükleniyor...</p>
+  if (error) return <p>{error}</p>
+  if (!data || !data.fuelPrices?.istanbul) return <p>Veri yok.</p>
+
+  const istanbulPrices = data.fuelPrices.istanbul
+
   return (
-    <section className='my-6'>
-      <h2 className='text-2xl font-semibold mb-4'>Güncel Yakıt Fiyatları</h2>
+    <section className='mb-12'>
+      <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4'>
+        <h2 className='text-2xl sm:text-3xl font-bold text-gray-800 flex items-center'>
+          <ChartBarIcon className='h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-2' />
+          Güncel Yakıt Fiyatları (İstanbul)
+        </h2>
+        <div className='flex items-center text-sm text-gray-500'>
+          <ClockIcon className='h-4 w-4 mr-1' />
+          Son Güncelleme: Anlık Veri
+        </div>
+      </div>
+
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        <FuelPriceCard title='Benzin' price={32.76} change={2.3} />
-        <FuelPriceCard title='LPG' price={15.42} change={-0.8} />
-        <FuelPriceCard title='Elektrik' price={3.12} />
-        <FuelPriceCard title='Doğal Gaz' price={5.87} change={1.2} />
+        {istanbulPrices.benzin !== undefined && (
+          <FuelPriceCard
+            title='Benzin'
+            price={istanbulPrices.benzin}
+            change={2.3}
+            unit='₺/L'
+          />
+        )}
+        {istanbulPrices.motorin !== undefined && (
+          <FuelPriceCard
+            title='Motorin'
+            price={istanbulPrices.motorin}
+            change={1.1}
+            unit='₺/L'
+          />
+        )}
+        {istanbulPrices.lpg !== undefined && (
+          <FuelPriceCard
+            title='LPG'
+            price={istanbulPrices.lpg}
+            change={-0.8}
+            unit='₺/L'
+          />
+        )}
+        <FuelPriceCard title='Elektrik' price={3.12} unit='₺/kWh' />
+        <FuelPriceCard
+          title='Doğal Gaz'
+          price={5.87}
+          change={1.2}
+          unit='₺/m³'
+        />
       </div>
     </section>
   )
