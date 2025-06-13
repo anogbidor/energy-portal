@@ -69,7 +69,7 @@ export default function Footer() {
             <div className='flex space-x-4'>
               <a
                 href='#'
-                className='text-yellow-200 hover:text-white transition'
+                className='text-white hover:text-white transition'
                 aria-label='LinkedIn'
               >
                 <svg
@@ -83,7 +83,7 @@ export default function Footer() {
               </a>
               <a
                 href='#'
-                className='text-yellow-200 hover:text-white transition'
+                className='text-white hover:text-white transition'
                 aria-label='Instagram'
               >
                 <svg
