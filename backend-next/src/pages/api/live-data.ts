@@ -16,31 +16,64 @@ type Data = {
   fuelPrices: Record<string, FuelPrice>
 }
 
+// Simple in-memory cache
+let lastFetched: number | null = null
+let cachedExchangeData: {
+  usdTry: number | null
+  eurTry: number | null
+  gbpTry: number | null
+} | null = null
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data | { error: string }>
 ) {
-  // ✅ Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // ✅ Respond to preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
   }
 
   try {
-    const brent = 83.42
+    const brent = 83.42 // Placeholder
 
-    const exchangeRes = await fetch(
-      'https://api.exchangerate.host/latest?base=USD&symbols=TRY,EUR,GBP'
-    )
-    const exchangeData = await exchangeRes.json()
+    let usdTry: number | null = null
+    let eurTry: number | null = null
+    let gbpTry: number | null = null
 
-    const usdTry = exchangeData?.rates?.TRY ?? null
-    const eurTry = exchangeData?.rates?.EUR ?? null
-    const gbpTry = exchangeData?.rates?.GBP ?? null
+    const now = Date.now()
+    const shouldFetch =
+      !cachedExchangeData || !lastFetched || now - lastFetched > 86400000
+
+    if (shouldFetch) {
+      const apiKey = process.env.EXCHANGE_API_KEY
+      console.log('✅ EXCHANGE_API_KEY:', apiKey)
+
+      const exchangeRes = await fetch(
+        `https://api.exchangerate.host/live?access_key=${apiKey}`
+      )
+      const exchangeData = await exchangeRes.json()
+      console.log('exchangeData', exchangeData)
+
+      const USDTRY: number | null = exchangeData?.quotes?.USDTRY ?? null
+      const USDEUR: number | null = exchangeData?.quotes?.USDEUR ?? null
+      const USDGBP: number | null = exchangeData?.quotes?.USDGBP ?? null
+
+      usdTry = USDTRY
+      eurTry = USDTRY !== null && USDEUR !== null ? USDTRY / USDEUR : null
+      gbpTry = USDTRY !== null && USDGBP !== null ? USDTRY / USDGBP : null
+
+      cachedExchangeData = { usdTry, eurTry, gbpTry }
+      lastFetched = now
+    } else {
+      ;;({ usdTry, eurTry, gbpTry } = cachedExchangeData ?? {
+        usdTry: null,
+        eurTry: null,
+        gbpTry: null,
+      })
+    }
 
     const fuelPricesPath = path.join(
       process.cwd(),
@@ -59,7 +92,7 @@ export default async function handler(
       fuelPrices,
     })
   } catch (err) {
-   console.error('❌ Error in /api/live-data:', err)
-   res.status(500).json({ error: 'Failed to fetch live data' })
+    console.error('❌ Error in /api/live-data:', err)
+    res.status(500).json({ error: 'Failed to fetch live data' })
   }
 }
