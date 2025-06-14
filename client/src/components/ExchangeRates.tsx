@@ -67,6 +67,13 @@ export default function ExchangeRates() {
 
   const rates = [
     {
+      name: 'Brent (USD)',
+      symbol: '',
+      value: data.brent,
+      change: 0.1,
+      targetSymbol: '$',
+    },
+    {
       name: 'USD/TRY',
       symbol: '$',
       value: data.usdTry,
@@ -109,11 +116,9 @@ export default function ExchangeRates() {
               <div>
                 <p className='text-sm font-medium text-gray-500'>{rate.name}</p>
                 <div className='mt-1 flex items-baseline'>
-                  
                   <span className='text-2xl font-semibold text-gray-900'>
                     {rate.value !== null ? rate.value.toFixed(2) : '-'}
                   </span>
-                  
                 </div>
               </div>
               <div

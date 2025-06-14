@@ -16,12 +16,13 @@ type Data = {
   fuelPrices: Record<string, FuelPrice>
 }
 
-// Simple in-memory cache
+// In-memory cache
 let lastFetched: number | null = null
 let cachedExchangeData: {
   usdTry: number | null
   eurTry: number | null
   gbpTry: number | null
+  brent: number | null
 } | null = null
 
 export default async function handler(
@@ -37,11 +38,10 @@ export default async function handler(
   }
 
   try {
-    const brent = 83.42 // Placeholder
-
     let usdTry: number | null = null
     let eurTry: number | null = null
     let gbpTry: number | null = null
+    let brent: number | null = 83.42 // 🟡 Hardcoded placeholder for Brent
 
     const now = Date.now()
     const shouldFetch =
@@ -57,21 +57,37 @@ export default async function handler(
       const exchangeData = await exchangeRes.json()
       console.log('exchangeData', exchangeData)
 
-      const USDTRY: number | null = exchangeData?.quotes?.USDTRY ?? null
-      const USDEUR: number | null = exchangeData?.quotes?.USDEUR ?? null
-      const USDGBP: number | null = exchangeData?.quotes?.USDGBP ?? null
+      const USDTRY = exchangeData?.quotes?.USDTRY ?? null
+      const USDEUR = exchangeData?.quotes?.USDEUR ?? null
+      const USDGBP = exchangeData?.quotes?.USDGBP ?? null
 
       usdTry = USDTRY
-      eurTry = USDTRY !== null && USDEUR !== null ? USDTRY / USDEUR : null
-      gbpTry = USDTRY !== null && USDGBP !== null ? USDTRY / USDGBP : null
+      eurTry = USDTRY && USDEUR ? USDTRY / USDEUR : null
+      gbpTry = USDTRY && USDGBP ? USDTRY / USDGBP : null
 
-      cachedExchangeData = { usdTry, eurTry, gbpTry }
+      // ❌ Commented out until plan upgraded
+      /*
+      try {
+        const marketstackKey = process.env.MARKETSTACK_API_KEY
+        const brentRes = await fetch(
+          `http://api.marketstack.com/v1/eod?access_key=${marketstackKey}&symbols=BCOMCO.INDX&limit=1`
+        )
+        const brentData = await brentRes.json()
+        console.log('brentData', brentData)
+        brent = brentData?.data?.[0]?.close ?? brent
+      } catch (brentErr) {
+        console.error('❌ Failed to fetch Brent price:', brentErr)
+      }
+      */
+
+      cachedExchangeData = { usdTry, eurTry, gbpTry, brent }
       lastFetched = now
     } else {
-      ;;({ usdTry, eurTry, gbpTry } = cachedExchangeData ?? {
+      ;({ usdTry, eurTry, gbpTry, brent } = cachedExchangeData ?? {
         usdTry: null,
         eurTry: null,
         gbpTry: null,
+        brent: 83.42,
       })
     }
 
