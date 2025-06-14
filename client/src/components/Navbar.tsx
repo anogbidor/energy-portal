@@ -24,7 +24,7 @@ export default function Navbar() {
   ]
 
   return (
-    <nav className='bg-gradient-to-r from-blue-800 to-blue-600 text-white shadow-lg'>
+    <nav className='bg-[#1fa637] text-white shadow-lg'>
       <div className='container mx-auto px-4'>
         <div className='flex justify-between items-center py-3'>
           <div className='flex items-center space-x-2'>
@@ -36,7 +36,6 @@ export default function Navbar() {
                 className='h-8 w-auto object-contain transition-all duration-300 hover:scale-105'
               />
             </div>
-           
           </div>
 
           <div className='hidden md:flex items-center space-x-1'>
@@ -46,8 +45,8 @@ export default function Navbar() {
                 to={item.path}
                 className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   location.pathname === item.path
-                    ? 'bg-blue-900 text-yellow-300'
-                    : 'hover:bg-blue-700 hover:text-yellow-200'
+                    ? 'bg-blue-900 text-white'
+                    : 'hover:bg-blue-900 hover:text-yellow-200'
                 }`}
               >
                 <item.icon className='h-5 w-5 mr-2' />
@@ -57,7 +56,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-      <button
+          <button
             type='button'
             title='Menu'
             className='md:hidden p-2 rounded-md text-white hover:bg-blue-700 focus:outline-none transition-colors duration-200'

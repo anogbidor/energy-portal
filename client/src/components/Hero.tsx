@@ -140,7 +140,7 @@ export default function Hero() {
   const duplicatedItems = [...tickerItems, ...tickerItems]
 
   return (
-    <section className='bg-gradient-to-br from-blue-900 to-blue-700 text-white relative pb-28 overflow-hidden'>
+    <section className='bg-[#1fa637] text-white relative pb-28 overflow-hidden'>
       <div className='absolute inset-0 opacity-10'>
         <div className='absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
         <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
@@ -157,15 +157,15 @@ export default function Hero() {
 
         <div className='mt-8 flex justify-center relative max-w-2xl mx-auto'>
           <div className='relative w-full'>
-            <MagnifyingGlassIcon className='absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400' />
+            <MagnifyingGlassIcon className='absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400' />
             <input
               type='text'
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder='Brent, Sterlin, Dolar, Elektrik fiyatları ara...'
-              className='w-full pl-12 pr-6 py-3 rounded-full bg-white/10 text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 shadow-lg transition-all duration-200 border border-white/20'
+              className='w-full pl-12 pr-6 py-3 rounded-full bg-white/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/15 focus:ring-offset-2 shadow-lg transition-all duration-200 border border-white/20'
             />
-            <button className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 text-gray-900 px-4 py-1 rounded-full text-sm font-medium hover:bg-yellow-600 transition-colors'>
+            <button className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-900 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-800 transition-colors'>
               Ara
             </button>
           </div>
@@ -181,7 +181,7 @@ export default function Hero() {
               className={`py-2.5 px-5 rounded-full text-sm font-medium transition-all duration-200 ${
                 selectedFilter === filter
                   ? 'bg-yellow-400 text-gray-900 shadow-md hover:bg-yellow-500'
-                  : 'bg-white/10 hover:bg-white/20 text-white shadow-sm hover:shadow-md'
+                  : 'bg-white/10 hover:bg-white/10 text-white shadow-sm hover:shadow-md'
               }`}
             >
               {filter}
@@ -191,7 +191,7 @@ export default function Hero() {
 
         {selectedFilter && (
           <div className='mt-4 animate-fade-in'>
-            <p className='inline-flex items-center text-sm text-yellow-200 bg-white/10 px-4 py-2 rounded-full'>
+            <p className='inline-flex items-center text-sm text-yellow-200 bg-white/50 px-4 py-2 rounded-full'>
               <span>Seçilen filtre:</span>
               <strong className='ml-1 bg-yellow-400/20 px-2 py-0.5 rounded-full'>
                 {selectedFilter}
@@ -210,10 +210,10 @@ export default function Hero() {
           {tickerItems.map((item) => (
             <div
               key={item.name}
-              className='bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer hover:shadow-lg group'
+              className='bg-white/35 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/10 transition-all duration-200 cursor-pointer hover:shadow-lg group'
             >
               <div className='flex items-center justify-between'>
-                <div className='text-sm text-blue-100 flex items-center'>
+                <div className='text-sm text-white flex items-center'>
                   <span className='mr-2'>{item.icon}</span>
                   {item.name}
                 </div>
@@ -247,7 +247,7 @@ export default function Hero() {
       </div>
 
       <div
-        className='absolute bottom-0 left-0 right-0 bg-gradient-to-r from-blue-900/90 to-blue-800/90 backdrop-blur-sm overflow-hidden border-t border-white/10'
+        className='absolute bottom-0 left-0 right-0 bg-[#1A202C] backdrop-blur-sm overflow-hidden border-t border-white/10'
         onMouseEnter={() => setIsHoveringTicker(true)}
         onMouseLeave={() => setIsHoveringTicker(false)}
       >

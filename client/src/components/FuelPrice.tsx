@@ -1,6 +1,6 @@
 import { useLiveData } from '../hooks/useLiveData'
 import FuelPriceCard from './FuelPriceCard'
-import { ChartBarIcon, ClockIcon } from '@heroicons/react/24/solid'
+import {  ClockIcon } from '@heroicons/react/24/solid'
 
 export default function FuelPrice() {
   const { data, loading, error } = useLiveData()
@@ -14,10 +14,7 @@ export default function FuelPrice() {
   return (
     <section className='mb-12'>
       <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4'>
-        <h2 className='text-2xl sm:text-3xl font-bold text-gray-800 flex items-center'>
-          <ChartBarIcon className='h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-2' />
-          Güncel Yakıt Fiyatları (İstanbul)
-        </h2>
+        
         <div className='flex items-center text-sm text-gray-500'>
           <ClockIcon className='h-4 w-4 mr-1' />
           Son Güncelleme: Anlık Veri

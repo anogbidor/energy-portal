@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom'
 
 export default function Footer() {
   return (
-    <footer className='bg-blue-800 text-white'>
+    <footer className='bg-[#1fa637] text-white'>
       <div className='container mx-auto px-4 py-8'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
           {/* About */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold'>Enerji Portal</h3>
-            <p className='text-blue-100'>
+            <p className='text-white'>
               Enerji sektörü için güncel bilgiler ve analizler.
             </p>
           </div>
@@ -20,7 +20,7 @@ export default function Footer() {
               <li>
                 <Link
                   to='/about'
-                  className='text-blue-100 hover:text-white transition'
+                  className='text-white hover:text-white transition'
                 >
                   Hakkımızda
                 </Link>
@@ -55,7 +55,7 @@ export default function Footer() {
           {/* Contact */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold'>İletişim</h3>
-            <address className='not-italic text-blue-100'>
+            <address className='not-italic text-white'>
               <p>1234 Enerji Caddesi</p>
               <p>Ankara, Türkiye</p>
               <p>Email: info@enerjiportal.com</p>
@@ -104,7 +104,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className='border-t border-blue-700 mt-8 pt-6 text-center text-blue-100'>
+        <div className='border-t border-white/10 mt-8 pt-6 text-center text-white'>
           <p>
             © {new Date().getFullYear()} Enerji Portal. Tüm hakları saklıdır.
           </p>
