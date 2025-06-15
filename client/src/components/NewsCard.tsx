@@ -35,7 +35,7 @@ export default function NewsCard({
       
       {/* Content Section */}
       <div className='p-5'>
-        <h4 className='font-semibold text-lg text-gray-800 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2'>
+        <h4 className='font-semibold text-lg text-gray-800 group-hover:text-green-600 transition-colors duration-200 line-clamp-2'>
           {title}
         </h4>
         
@@ -56,7 +56,7 @@ export default function NewsCard({
             href={link} 
             target='_blank' 
             rel='noopener noreferrer'
-            className='text-xs font-medium text-blue-500 hover:text-blue-600 cursor-pointer transition-colors duration-200'
+            className='text-xs font-medium text-green-600 hover:text-blue-600 cursor-pointer transition-colors duration-200'
           >
             Devamını oku →
           </a>

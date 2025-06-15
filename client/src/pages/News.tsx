@@ -87,7 +87,7 @@ export default function NewsPage() {
                 }}
                 className={`px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2 whitespace-nowrap transition-colors ${
                   activeCategory === category.name
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-green-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm'
                 }`}
               >
@@ -124,14 +124,14 @@ export default function NewsPage() {
                     )}
                   </div>
                   <div className='p-8'>
-                    <div className='uppercase tracking-wide text-sm text-blue-600 font-semibold'>
+                    <div className='uppercase tracking-wide text-sm text-green-600 font-semibold'>
                       {featuredNews.category} • Öne Çıkan
                     </div>
                     <a
                       href={featuredNews.link}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='block mt-2 text-2xl font-semibold text-gray-900 hover:text-blue-600 transition-colors'
+                      className='block mt-2 text-2xl font-semibold text-gray-900 hover:text-green-600 transition-colors'
                     >
                       {featuredNews.title}
                     </a>
@@ -145,7 +145,7 @@ export default function NewsPage() {
                         href={featuredNews.link}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
+                        className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
                       >
                         Haberin Devamı
                         <svg
@@ -195,7 +195,7 @@ export default function NewsPage() {
                   </div>
                   <div className='p-6'>
                     <div className='flex items-center text-xs text-gray-500 mb-2'>
-                      <span className='font-medium text-blue-600'>
+                      <span className='font-medium text-green-600'>
                         {item.category}
                       </span>
                       <span className='mx-2'>•</span>
@@ -205,7 +205,7 @@ export default function NewsPage() {
                       href={item.link}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='block text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors mb-2'
+                      className='block text-lg font-semibold text-gray-900 hover:text-green-600 transition-colors mb-2'
                     >
                       {item.title}
                     </a>
@@ -217,7 +217,7 @@ export default function NewsPage() {
                       href={item.link}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors'
+                      className='text-sm font-medium text-green600 hover:text-blue-900 transition-colors'
                     >
                       Devamını oku →
                     </a>
@@ -227,7 +227,6 @@ export default function NewsPage() {
             </div>
 
             {/* Load More Button */}
-            
           </div>
         )}
       </div>

@@ -106,7 +106,7 @@ export default function Home() {
             </h2>
             <Link
               to='/news'
-              className='text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center transition-colors'
+              className='text-green-600 hover:text-blue-800 text-sm font-medium flex items-center transition-colors'
               aria-label='Tüm haberleri görüntüle'
             >
               Tüm Haberler <ArrowRightIcon className='h-4 w-4 ml-1' />
@@ -116,6 +116,7 @@ export default function Home() {
           {loading ? (
             <div className='flex justify-center py-12'>
               <LoadingSpinner />
+              <div className='text-black text-lg'>Veriler yükleniyor</div>
             </div>
           ) : error ? (
             <ErrorMessage message={error} />
@@ -148,7 +149,7 @@ export default function Home() {
             </p>
             <Link
               to='/premium'
-              className='inline-flex items-center justify-center bg-white hover:bg-white/70 text-[#1fa637] font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg'
+              className='inline-flex items-center justify-center bg-white hover:bg-white/70 text-blue-900 font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg'
               aria-label='Premium üyelik sayfasına git'
             >
               Premium Üye Ol

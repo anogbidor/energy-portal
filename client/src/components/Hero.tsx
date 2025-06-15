@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/20/solid'
 import { useEffect, useRef, useState } from 'react'
 import { useLiveData } from '../hooks/useLiveData'
+import LoadingSpinner from './LoadingSpinner'
 
 export default function Hero() {
   const tickerRef = useRef<HTMLDivElement>(null)
@@ -50,16 +51,17 @@ export default function Hero() {
 
   if (loading)
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600'>
-        <div className='animate-pulse text-white text-lg'>
-          Veriler yükleniyor...
+      <div className='min-h-screen flex flex-col items-center justify-center bg-[#1fa637]'>
+        <div className='animate-pulse text-white text-lg mb-2'>
+          <LoadingSpinner />
         </div>
+        <div className='text-white text-lg'>Veriler yükleniyor</div>
       </div>
     )
 
   if (error || !data)
     return (
-      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600'>
+      <div className='min-h-screen flex items-center justify-center bg-[#1fa637]'>
         <div className='bg-red-100 border-l-4 border-red-500 p-4 max-w-md'>
           <div className='flex items-center'>
             <div className='flex-shrink-0'>
