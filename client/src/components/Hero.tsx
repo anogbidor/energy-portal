@@ -167,7 +167,7 @@ export default function Hero() {
               placeholder='Brent, Sterlin, Dolar, Elektrik fiyatları ara...'
               className='w-full pl-12 pr-6 py-3 rounded-full bg-white/80 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/15 focus:ring-offset-2 shadow-lg transition-all duration-200 border border-white/20'
             />
-            <button className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-900 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-blue-800 transition-colors'>
+            <button type='submit' className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-900 text-white px-4 py-1 rounded-full text-sm font-medium hover:bg-green-800 transition-colors'>
               Ara
             </button>
           </div>

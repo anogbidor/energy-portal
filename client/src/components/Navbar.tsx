@@ -19,7 +19,7 @@ export default function Navbar() {
     { path: '/prices', name: 'Fiyatlar', icon: CurrencyDollarIcon },
     { path: '/stations', name: 'İstasyonlar', icon: MapPinIcon },
     { path: '/reports', name: 'Raporlar', icon: DocumentChartBarIcon },
-    { path: '/careers', name: 'İş İlanları', icon: BriefcaseIcon },
+    { path: '/careers', name: 'İlanları', icon: BriefcaseIcon },
     { path: '/real-estate', name: 'Emlak', icon: BuildingOfficeIcon },
   ]
 
@@ -45,8 +45,8 @@ export default function Navbar() {
                 to={item.path}
                 className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   location.pathname === item.path
-                    ? 'bg-blue-900 text-white'
-                    : 'hover:bg-blue-900 hover:text-yellow-200'
+                    ? 'bg-white/15 text-yellow-200'
+                    : 'hover:bg-white/10 hover:text-yellow-200'
                 }`}
               >
                 <item.icon className='h-5 w-5 mr-2' />
