@@ -71,9 +71,9 @@ export default function RealEstateList({ listings }: Props) {
     <div className='space-y-6'>
       {/* List controls */}
       <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
-        <div className='text-sm text-gray-500'>
+        <div className='text-sm text-green-900'>
           Showing{' '}
-          <span className='font-medium text-gray-900'>{listings.length}</span>{' '}
+          <span className='font-medium text-green-900'>{listings.length}</span>{' '}
           properties
         </div>
 
@@ -103,7 +103,8 @@ export default function RealEstateList({ listings }: Props) {
 
           {/* View mode toggle */}
           <div className='flex bg-gray-100 rounded-md p-1'>
-            <button
+       <button
+              type='button'
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md ${
                 viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500'

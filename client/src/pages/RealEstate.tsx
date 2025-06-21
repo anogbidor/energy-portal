@@ -16,7 +16,7 @@ export default function RealEstatePage() {
   return (
     <div className=' bg-white max-w-auto mx-auto px-4 sm:px-6 lg:px-8 py-8'>
       {/* Hero Section */}
-      <div className='bg-[#1fa637] rounded-2xl p-8 mb-8 text-white'>
+      <div className='bg-gray-200 rounded-2xl p-8 mb-8 text-green-900'>
         <div className='max-w-2xl'>
           <h1 className='text-4xl font-bold mb-4'>Find Your Dream Property</h1>
           <p className='text-lg mb-6'>
@@ -27,7 +27,7 @@ export default function RealEstatePage() {
           {/* Search Bar */}
           <div className='relative'>
             <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-              <FiSearch className='h-5 w-5 text-green-800' />
+              <FiSearch className='h-5 w-5 text-green-900' />
             </div>
             <input
               type='text'
@@ -46,21 +46,21 @@ export default function RealEstatePage() {
       {/* Filter Bar */}
       <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8'>
         <div className='flex items-center gap-2'>
-          <FiFilter className='text-gray-500' />
+          <FiFilter className='text-green-900' />
           <span className='font-medium'>Filters:</span>
         </div>
 
         <div className='flex flex-wrap gap-3'>
-          <button type='button' title='Houses' className='px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
+          <button type='button' title='Houses' className='px-4 py-2 bg-gray-100 text-green-900 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
             <FiHome className='inline mr-1' /> Houses
           </button>
-          <button type='button' title='Location' className='px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
+          <button type='button' title='Location' className='px-4 py-2 bg-gray-100 text-green-900 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
             <FiMapPin className='inline mr-1' /> Location
           </button>
-          <button type='button' className='px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
+          <button type='button' className='px-4 py-2 bg-gray-100 text-green-900 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
             Price Range
           </button>
-          <button type='button' className='px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
+          <button type='button' className='px-4 py-2 bg-gray-100 text-green-900 rounded-full text-sm font-medium hover:bg-gray-200 transition'>
             Bedrooms
           </button>
         </div>
@@ -103,11 +103,11 @@ export default function RealEstatePage() {
       {/* Results Count */}
       {!loading && !error && (
         <div className='mb-6 flex justify-between items-center'>
-          <h2 className='text-xl font-semibold text-gray-900'>
+          <h2 className='text-xl font-semibold text-green-900'>
             {filteredListings.length}{' '}
             {filteredListings.length === 1 ? 'Property' : 'Properties'} Found
           </h2>
-          <div className='text-sm text-gray-500'>
+          <div className='text-sm text-green-900'>
             Sorted by: <span className='font-medium'>Recommended</span>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function RealEstatePage() {
               placeholder='Your email address'
               className='flex-1 min-w-0 px-4 py-3  text-white  rounded-l-lg border border-white/50 focus:outline-none focus:ring-1 focus:ring-white/50 focus:border-white/50'
             />
-            <button className='bg-white hover:bg-white/50 text-blue-900 px-6 py-3 rounded-r-lg font-medium transition'>
+            <button type='button' className='bg-white hover:bg-white/50 text-green-900 px-6 py-3 rounded-r-lg font-medium transition'>
               Subscribe
             </button>
           </div>
