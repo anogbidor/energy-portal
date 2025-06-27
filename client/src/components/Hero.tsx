@@ -2,7 +2,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   MagnifyingGlassIcon,
-  CurrencyPoundIcon,
+  // CurrencyPoundIcon,
 } from '@heroicons/react/20/solid'
 import { useEffect, useRef, useState } from 'react'
 import { useLiveData } from '../hooks/useLiveData'
@@ -38,16 +38,16 @@ export default function Hero() {
     return () => cancelAnimationFrame(animationFrame)
   }, [isHoveringTicker])
 
-  const filters = [
-    'Brent',
-    'LPG',
-    'Doğal Gaz',
-    'Elektrik',
-    'Akaryakıt',
-    'EPDK',
-    'Döviz',
-    'TÜPRAŞ',
-  ]
+  // const filters = [
+  //   'Brent',
+  //   'LPG',
+  //   'Doğal Gaz',
+  //   'Elektrik',
+  //   'Akaryakıt',
+  //   'EPDK',
+  //   'Döviz',
+  //   'TÜPRAŞ',
+  // ]
 
   if (loading)
     return (
@@ -102,27 +102,27 @@ export default function Hero() {
       unit: '₺/L',
       icon: '🔥',
     },
-    {
-      name: 'Dolar',
-      price: data.usdTry,
-      change: 1.2,
-      unit: '₺',
-      icon: '$',
-    },
-    {
-      name: 'Euro',
-      price: data.eurTry,
-      change: -0.5,
-      unit: '₺',
-      icon: '€',
-    },
-    {
-      name: 'Sterlin',
-      price: data.gbpTry,
-      change: 0.7,
-      unit: '₺',
-      icon: <CurrencyPoundIcon className='h-4 w-4 inline' />,
-    },
+    // {
+    //   name: 'Dolar',
+    //   price: data.usdTry,
+    //   change: 1.2,
+    //   unit: '₺',
+    //   icon: '$',
+    // },
+    // {
+    //   name: 'Euro',
+    //   price: data.eurTry,
+    //   change: -0.5,
+    //   unit: '₺',
+    //   icon: '€',
+    // },
+    // {
+    //   name: 'Sterlin',
+    //   price: data.gbpTry,
+    //   change: 0.7,
+    //   unit: '₺',
+    //   icon: <CurrencyPoundIcon className='h-4 w-4 inline' />,
+    // },
     {
       name: 'Elektrik',
       price: 3.12,
@@ -142,7 +142,7 @@ export default function Hero() {
   const duplicatedItems = [...tickerItems, ...tickerItems]
 
   return (
-    <section className='bg-[#1fa637] text-white relative pb-28 overflow-hidden'>
+    <section className='bg-[#1fa637] text-white relative pb-12 overflow-hidden'>
       <div className='absolute inset-0 opacity-10'>
         <div className='absolute top-0 left-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob'></div>
         <div className='absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000'></div>
@@ -173,7 +173,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className='mt-8 flex flex-wrap justify-center gap-3'>
+        {/* <div className='mt-8 flex flex-wrap justify-center gap-3'>
           {filters.map((filter) => (
             <button
               key={filter}
@@ -189,7 +189,7 @@ export default function Hero() {
               {filter}
             </button>
           ))}
-        </div>
+        </div> */}
 
         {selectedFilter && (
           <div className='mt-4 animate-fade-in'>

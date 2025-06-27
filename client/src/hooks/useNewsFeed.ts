@@ -38,7 +38,7 @@ export function useNewsFeed(): UseNewsFeedResult {
         // First fetch from RSS.app feed
         const rssResponse = await fetch(
           `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-            'https://rss.app/feeds/wKq3qhZU9ARqQtkB.xml'
+            'https://rss.app/feeds/PyqkAjCkWNmw1ejj.xml'
           )}`
         )
 

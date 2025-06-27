@@ -18,7 +18,7 @@ export default function Navbar() {
     { path: '/news', name: 'Haberler', icon: NewspaperIcon },
     { path: '/prices', name: 'Fiyatlar', icon: CurrencyDollarIcon },
     { path: '/stations', name: 'İstasyonlar', icon: MapPinIcon },
-    { path: '/reports', name: 'Raporlar', icon: DocumentChartBarIcon },
+    { path: '/license', name: 'Lisanslar', icon: DocumentChartBarIcon },
     { path: '/careers', name: 'İlanları', icon: BriefcaseIcon },
     { path: '/real-estate', name: 'Emlak', icon: BuildingOfficeIcon },
   ]
