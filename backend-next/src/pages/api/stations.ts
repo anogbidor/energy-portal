@@ -1,6 +1,6 @@
 // backend/src/pages/api/stations.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { stations } from '@/data/stations' // adjust path if needed
+import { stations } from '../../data/stations' // adjust path if needed
 
 export default async function handler(
   req: NextApiRequest,
