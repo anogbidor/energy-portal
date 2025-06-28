@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useLiveData } from '../hooks/useLiveData'
 
-export default function MarketsSidebar() {
+export default function MarketsSidebar(){
   const { data, loading, error } = useLiveData()
 
   if (loading)
