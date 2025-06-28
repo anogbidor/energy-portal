@@ -27,7 +27,8 @@ interface UseStationsOptions {
 
 export function useStations({ city, district }: UseStationsOptions = {}) {
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+  console.log('API_BASE_URL:', API_BASE_URL)
   const [data, setData] = useState<Station[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -1,23 +1,32 @@
 // backend/src/pages/api/stations.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { stations } from '../../data/stations' // adjust path if needed
+import { stations } from '../../data/stations'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // CORS headers to allow your frontend origin (adjust if needed)
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://energy-portal-stage.vercel.app', // replace with your actual Vercel frontend URL
+  ]
+
+  const origin = req.headers.origin
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*') // or consider restricting in production
+  }
+
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     res.status(200).end()
     return
   }
 
-  // Simulated delay (optional)
   const delay = () => new Promise((resolve) => setTimeout(resolve, 500))
 
   try {
