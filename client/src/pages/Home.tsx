@@ -14,7 +14,7 @@ import { useNewsFeed } from '../hooks/useNewsFeed'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import Sidebar from '../components/SideBar'
-import MarketsSidebar from '../components/MarketsSideBar'
+import MarketsSideBar from '../components/MarketsSideBar'
 import { useState, useEffect } from 'react'
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
         <div className='flex flex-col lg:flex-row gap-8'>
           {/* Left Sidebar - Piyasalar */}
           <div className='lg:w-72 flex-shrink-0 order-first'>
-            <MarketsSidebar />
+            <MarketsSideBar />
           </div>
 
           {/* Main content area */}
