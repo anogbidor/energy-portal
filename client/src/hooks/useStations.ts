@@ -1,6 +1,9 @@
 // client/src/hooks/useStations.ts
 import { useEffect, useState } from 'react'
 
+
+
+
 export interface Station {
   id: string
   name: string
@@ -23,6 +26,8 @@ interface UseStationsOptions {
 }
 
 export function useStations({ city, district }: UseStationsOptions = {}) {
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
   const [data, setData] = useState<Station[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +43,7 @@ export function useStations({ city, district }: UseStationsOptions = {}) {
         if (district) params.append('district', district)
 
         const res = await fetch(
-          `http://localhost:3000/api/stations?${params.toString()}`
+          `${API_BASE_URL}/api/stations?${params.toString()}`
         )
 
         if (!res.ok) {
@@ -57,7 +62,7 @@ export function useStations({ city, district }: UseStationsOptions = {}) {
     }
 
     fetchData()
-  }, [city, district])
+  }, [city, district, API_BASE_URL])
 
   return {
     data,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+
 export type FuelPrice = {
   benzin: number
   motorin: number
@@ -15,12 +16,15 @@ export type LiveData = {
 }
 
 export function useLiveData() {
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+
   const [data, setData] = useState<LiveData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/live-data')
+    fetch(`${API_BASE_URL}/api/live-data`)
       .then((res) => res.json())
       .then((json) => {
         setData(json)
@@ -31,7 +35,7 @@ export function useLiveData() {
         setError('Veri alınamadı')
         setLoading(false)
       })
-  }, [])
+  }, [API_BASE_URL])
 
   return { data, loading, error }
 }
