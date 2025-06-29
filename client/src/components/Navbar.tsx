@@ -9,9 +9,11 @@ import {
   BriefcaseIcon,
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function Navbar() {
   const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navItems = [
     { path: '/', name: 'Anasayfa', icon: HomeIcon },
@@ -38,6 +40,7 @@ export default function Navbar() {
             </div>
           </div>
 
+          {/* Desktop Navigation */}
           <div className='hidden md:flex items-center space-x-1'>
             {navItems.map((item) => (
               <Link
@@ -59,8 +62,9 @@ export default function Navbar() {
           <button
             type='button'
             title='Menu'
-            className='md:hidden p-2 rounded-md text-white hover:bg-blue-700 focus:outline-none transition-colors duration-200'
+            className='md:hidden p-2 rounded-md text-white hover:bg-white/10 focus:outline-none transition-colors duration-200'
             aria-label='Navigation menu'
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <svg
               className='h-6 w-6'
@@ -76,6 +80,27 @@ export default function Navbar() {
               />
             </svg>
           </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div className={`md:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
+          <div className='pt-2 pb-4 space-y-1'>
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center px-3 py-2 rounded-md text-base font-medium transition-all duration-200 ${
+                  location.pathname === item.path
+                    ? 'bg-white/15 text-yellow-200'
+                    : 'hover:bg-white/10 hover:text-yellow-200'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <item.icon className='h-5 w-5 mr-2' />
+                {item.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </nav>
