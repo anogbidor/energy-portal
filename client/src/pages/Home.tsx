@@ -48,18 +48,18 @@ export default function Home() {
 
       <section className='py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto'>
         <div className='flex flex-col lg:flex-row gap-8'>
-          {/* Left Sidebar - Piyasalar */}
-          <div className='lg:w-72 flex-shrink-0 order-first'>
+          {/* Left Sidebar - Piyasalar - Hidden on mobile */}
+          <div className='hidden lg:block lg:w-72 flex-shrink-0 order-first'>
             <MarketsSideBar />
           </div>
 
           {/* Main content area */}
-          <div className='flex-1'>
+          <div className='flex-1 w-full'>
             {/* News Section */}
-            <div className='mb-12 bg-white rounded-xl shadow-sm p-6 border border-gray-100'>
+            <div className='mb-12 bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100'>
               <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4'>
-                <h2 className='text-2xl font-bold text-gray-800 flex items-center'>
-                  <NewspaperIcon className='h-6 w-6 text-red-500 mr-2' />
+                <h2 className='text-xl sm:text-2xl font-bold text-gray-800 flex items-center'>
+                  <NewspaperIcon className='h-5 w-5 sm:h-6 sm:w-6 text-red-500 mr-2' />
                   Son Enerji Haberleri
                 </h2>
                 <Link
@@ -72,9 +72,11 @@ export default function Home() {
               </div>
 
               {loading ? (
-                <div className='flex justify-center py-12'>
+                <div className='flex flex-col items-center py-12'>
                   <LoadingSpinner />
-                  <div className='text-black text-lg'>Veriler yükleniyor</div>
+                  <div className='text-black text-lg mt-2'>
+                    Veriler yükleniyor
+                  </div>
                 </div>
               ) : error ? (
                 <ErrorMessage message={error} />
@@ -87,7 +89,7 @@ export default function Home() {
                   {/* Carousel Container */}
                   <div className='relative overflow-hidden rounded-lg'>
                     <div
-                      className='flex transition-[transform] duration-300 ease-in-out'
+                      className='flex transition-transform duration-300 ease-in-out'
                       style={{
                         transform: `translateX(-${currentSlide * 100}%)`,
                       }}
@@ -97,8 +99,8 @@ export default function Home() {
                           key={`${item.title}-${item.date}`}
                           className='w-full flex-shrink-0'
                         >
-                          <div className='bg-gray-50 p-6 rounded-lg border border-gray-200'>
-                            <div className='flex items-center justify-between mb-3'>
+                          <div className='bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200'>
+                            <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
                               <span className='text-xs font-semibold text-gray-500'>
                                 {item.category || 'GENEL'} - ÖNE ÇIKAN
                               </span>
@@ -106,7 +108,7 @@ export default function Home() {
                                 {item.date}
                               </span>
                             </div>
-                            <h3 className='text-xl font-bold text-gray-800 mb-3'>
+                            <h3 className='text-lg sm:text-xl font-bold text-gray-800 mb-3'>
                               {item.title}
                             </h3>
                             <p className='text-gray-600 mb-4 line-clamp-2'>
@@ -128,18 +130,18 @@ export default function Home() {
                   {/* Navigation Arrows */}
                   {featuredNews.length > 1 && (
                     <>
-                            <button
-                              title='Onceki Haber'
-                              type='button'
+                      <button
+                        title='Onceki Haber'
+                        type='button'
                         onClick={prevSlide}
                         className='absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10'
                         aria-label='Önceki haber'
                       >
                         <ChevronLeftIcon className='h-5 w-5 text-gray-600' />
                       </button>
-                            <button
-                              title='Sonraki Haber'
-                              type='button'
+                      <button
+                        title='Sonraki Haber'
+                        type='button'
                         onClick={nextSlide}
                         className='absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10'
                         aria-label='Sonraki haber'
@@ -151,12 +153,12 @@ export default function Home() {
 
                   {/* Navigation Dots */}
                   {featuredNews.length > 1 && (
-                    <div className='flex justify-center mt-6 space-x-2'>
+                    <div className='flex justify-center mt-4 sm:mt-6 space-x-2'>
                       {featuredNews.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentSlide(index)}
-                          className={`h-2 w-8 rounded-full transition-all ${
+                          className={`h-2 w-6 sm:w-8 rounded-full transition-all ${
                             currentSlide === index
                               ? 'bg-green-600'
                               : 'bg-gray-300'
@@ -171,71 +173,77 @@ export default function Home() {
             </div>
 
             {/* Quick Stats Section */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-12'>
-              <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-4'>
-                  <BoltIcon className='h-6 w-6 text-blue-600 mr-2' />
-                  <h3 className='text-lg font-semibold text-gray-800'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12'>
+              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
+                <div className='flex items-center mb-3 sm:mb-4'>
+                  <BoltIcon className='h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mr-2' />
+                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
                     Elektrik Tüketimi
                   </h3>
                 </div>
-                <p className='text-2xl font-bold text-gray-900'>48,542 MWh</p>
-                <p className='text-sm text-green-600 mt-1'>
+                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
+                  48,542 MWh
+                </p>
+                <p className='text-xs sm:text-sm text-green-600 mt-1'>
                   ↑ Dünden 2.4% artış
                 </p>
               </div>
 
-              <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-4'>
-                  <ChartBarIcon className='h-6 w-6 text-green-600 mr-2' />
-                  <h3 className='text-lg font-semibold text-gray-800'>
+              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
+                <div className='flex items-center mb-3 sm:mb-4'>
+                  <ChartBarIcon className='h-5 w-5 sm:h-6 sm:w-6 text-green-600 mr-2' />
+                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
                     Yenilenebilir Enerji
                   </h3>
                 </div>
-                <p className='text-2xl font-bold text-gray-900'>34.2%</p>
-                <p className='text-sm text-green-600 mt-1'>
+                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
+                  34.2%
+                </p>
+                <p className='text-xs sm:text-sm text-green-600 mt-1'>
                   ↑ Geçen aydan %1,8 artış
                 </p>
               </div>
 
-              <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-4'>
-                  <CurrencyDollarIcon className='h-6 w-6 text-yellow-500 mr-2' />
-                  <h3 className='text-lg font-semibold text-gray-800'>
+              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
+                <div className='flex items-center mb-3 sm:mb-4'>
+                  <CurrencyDollarIcon className='h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 mr-2' />
+                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
                     Petrol Fiyatı
                   </h3>
                 </div>
-                <p className='text-2xl font-bold text-gray-900'>₺28.45</p>
-                <p className='text-sm text-red-600 mt-1'>
+                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
+                  ₺28.45
+                </p>
+                <p className='text-xs sm:text-sm text-red-600 mt-1'>
                   ↓ Dünden %0,8 azalış
                 </p>
               </div>
             </div>
 
             {/* Call to Action */}
-            <div className='bg-[#1fa637] rounded-xl p-8 text-white shadow-lg'>
+            <div className='bg-[#1fa637] rounded-xl p-6 sm:p-8 text-white shadow-lg'>
               <div className='max-w-2xl mx-auto text-center'>
-                <h3 className='text-2xl font-bold mb-4'>
+                <h3 className='text-xl sm:text-2xl font-bold mb-3 sm:mb-4'>
                   Enerji Analizlerine Erişin
                 </h3>
-                <p className='mb-6 text-blue-100'>
+                <p className='mb-4 sm:mb-6 text-blue-100 text-sm sm:text-base'>
                   Premium üyelik ile detaylı raporlara, tarihsel verilere ve
                   özel analizlere erişebilirsiniz.
                 </p>
                 <Link
                   to='/premium'
-                  className='inline-flex items-center justify-center bg-white hover:bg-gray-100 text-blue-900 font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg'
+                  className='inline-flex items-center justify-center bg-white hover:bg-gray-100 text-blue-900 font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg text-sm sm:text-base'
                   aria-label='Premium üyelik sayfasına git'
                 >
                   Premium Üye Ol
-                  <ArrowRightIcon className='h-5 w-5 ml-2' />
+                  <ArrowRightIcon className='h-4 w-4 sm:h-5 sm:w-5 ml-2' />
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* Right Sidebar - Lisans Hareketler */}
-          <div className='lg:w-72 flex-shrink-0'>
+          {/* Right Sidebar - Lisans Hareketler - Hidden on mobile */}
+          <div className='hidden lg:block lg:w-72 flex-shrink-0'>
             <Sidebar />
           </div>
         </div>
