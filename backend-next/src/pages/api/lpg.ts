@@ -1,4 +1,3 @@
-// pages/api/lpg.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { Client } from 'soap'
 
@@ -20,6 +19,16 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    // Respond to OPTIONS requests quickly for CORS preflight
+    return res.status(200).end()
+  }
+
   // Fixed method name for LPG
   const method = 'lpgDagiticiLisansSorgula'
   const lisansDurumu =

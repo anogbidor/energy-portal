@@ -1,4 +1,3 @@
-// pages/api/elektrik.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { Client } from 'soap'
 
@@ -20,6 +19,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
   const method = 'elektrikDagitimLisansiSorgula'
   const lisansDurumu =
     typeof req.query.lisansDurumu === 'string'

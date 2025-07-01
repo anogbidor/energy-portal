@@ -15,10 +15,24 @@ interface SoapClientWithAsyncMethods extends Client {
 
 let soapClient: SoapClientWithAsyncMethods | null = null
 
+function enableCors(req: NextApiRequest, res: NextApiResponse<Data>): boolean {
+  res.setHeader('Access-Control-Allow-Origin', '*') // allow all origins, adjust as needed for production
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end()
+    return true
+  }
+  return false
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (enableCors(req, res)) return
+
   const { method = 'petrolDagiticiLisansSorgula', lisansDurumu = 'ONAYLANDI' } =
     req.query
 
@@ -39,9 +53,7 @@ export default async function handler(
 
     if (typeof methodFn === 'function') {
       const args = { lisansDurumu: String(lisansDurumu) }
-      // methodFn returns Promise<any>, but we keep it unknown here
       const result = await methodFn.call(soapClient, args)
-      // Result is expected to be an array with one item
       if (Array.isArray(result) && result.length > 0) {
         return res.status(200).json({ success: true, data: result[0] })
       } else {

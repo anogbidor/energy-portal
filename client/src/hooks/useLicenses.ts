@@ -31,14 +31,13 @@ interface UseLicensesResult {
   setMarket: (market: Market) => void
 }
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+
 const endpoints: Record<Market, string> = {
-  petrol:
-    '/api/petrolLicenses?method=petrolDagiticiLisansSorgula&lisansDurumu=ONAYLANDI',
-  lpg: '/api/lpg?method=lpgDagiticiLisansSorgula&lisansDurumu=ONAYLANDI',
-  dogalgaz:
-    '/api/dogalgaz?method=dogalgazDagitimLisansSorgula&lisansDurumu=ONAYLANDI',
-  elektrik:
-    '/api/elektrik?method=elektrikDagitimLisansiSorgula&lisansDurumu=ONAYLANDI',
+  petrol: `${API_BASE_URL}/api/petrolLicenses?method=petrolDagiticiLisansSorgula&lisansDurumu=ONAYLANDI`,
+  lpg: `${API_BASE_URL}/api/lpg?method=lpgDagiticiLisansSorgula&lisansDurumu=ONAYLANDI`,
+  dogalgaz: `${API_BASE_URL}/api/dogalgaz?method=dogalgazDagitimLisansSorgula&lisansDurumu=ONAYLANDI`,
+  elektrik: `${API_BASE_URL}/api/elektrik?method=elektrikDagitimLisansiSorgula&lisansDurumu=ONAYLANDI`,
 }
 
 export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
@@ -60,7 +59,6 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
         const json = await res.json()
 
         if (json.success) {
-          // Make sure json.data has 'return' property before setting
           if (json.data && typeof json.data.return !== 'undefined') {
             setData(json.data)
           } else {
@@ -70,7 +68,7 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
           setError(json.error || 'API returned error')
         }
       } catch (e) {
-       setError(`Network error: ${e}`)
+        setError(`Network error: ${e}`)
       } finally {
         setLoading(false)
       }
