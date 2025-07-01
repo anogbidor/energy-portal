@@ -6,7 +6,7 @@ export interface LicenseItem {
   lisansGenelBilgi: {
     lisansNo: string
     lisansSahibiUnvani: string
-    lisansDurumu: string // this will be mapped below
+    lisansDurumu: string
     baslangicTarihi: string
     bitisTarihi: string
     iptalTarihi?: string
@@ -30,33 +30,41 @@ interface UseLicensesResult {
   error?: string
   loading: boolean
   setMarket: (market: Market) => void
+  setStatus: (status: string) => void // <-- added
+  status: string // <-- added
 }
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
-const endpoints: Record<Market, string> = {
-  petrol: `${API_BASE_URL}/api/petrolLicenses?method=petrolDagiticiLisansSorgula&lisansDurumu=ONAYLANDI`,
-  lpg: `${API_BASE_URL}/api/lpg?method=lpgDagiticiLisansSorgula&lisansDurumu=ONAYLANDI`,
-  dogalgaz: `${API_BASE_URL}/api/dogalgaz?method=dogalgazDagitimLisansSorgula&lisansDurumu=ONAYLANDI`,
-  elektrik: `${API_BASE_URL}/api/elektrik?method=elektrikDagitimLisansiSorgula&lisansDurumu=ONAYLANDI`,
+// Instead of fixed endpoints, we build URLs dynamically now
+const methodForMarket: Record<Market, string> = {
+  petrol: 'petrolDagiticiLisansSorgula',
+  lpg: 'lpgDagiticiLisansSorgula',
+  dogalgaz: 'dogalgazDagitimLisansSorgula',
+  elektrik: 'elektrikDagitimLisansiSorgula',
 }
 
 const STATUS_LABELS: Record<string, string> = {
+  ONAYLANDI: 'Yürürlükte',
   SONLANDIRILDI: 'Sonlandırıldı',
   IPTAL_EDILDI: 'İptal Edildi',
   SURESI_DOLDU: 'Süresi Doldu',
   YURURLUKTEN_KALDIRILDI: 'Yürürlükten Kaldırıldı',
-  // You can add more mappings here if needed
+  FAALIYETI_GECICI_DURDURULDU: 'Faaliyeti Geçici Durduruldu',
 }
 
-export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
+export function useLicenses(
+  initialMarket: Market = 'lpg',
+  initialStatus: string = 'ONAYLANDI' // <-- added initialStatus
+): UseLicensesResult {
   const [market, setMarket] = useState<Market>(initialMarket)
+  const [status, setStatus] = useState<string>(initialStatus) // <-- added status state
   const [data, setData] = useState<Licenses>()
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!market) return
+    if (!market || !status) return
 
     const fetchData = async () => {
       setLoading(true)
@@ -64,12 +72,14 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
       setData(undefined)
 
       try {
-        const res = await fetch(endpoints[market])
+        // Build URL dynamically based on current market and status
+        const url = `${API_BASE_URL}/api/${market}?method=${methodForMarket[market]}&lisansDurumu=${status}`
+
+        const res = await fetch(url)
         const json = await res.json()
 
         if (json.success) {
           if (json.data && Array.isArray(json.data.return)) {
-            // Map lisansDurumu code to label for each license item
             const mappedData = {
               ...json.data,
               return: json.data.return.map((item: LicenseItem) => {
@@ -101,7 +111,7 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
     }
 
     fetchData()
-  }, [market])
+  }, [market, status]) // <-- listen to both market and status changes
 
-  return { data, error, loading, setMarket }
+  return { data, error, loading, setMarket, setStatus, status } // <-- expose setStatus and status
 }
