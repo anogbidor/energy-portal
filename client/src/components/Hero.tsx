@@ -2,7 +2,6 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   MagnifyingGlassIcon,
-  // CurrencyPoundIcon,
 } from '@heroicons/react/20/solid'
 import { useEffect, useRef, useState } from 'react'
 import { useLiveData } from '../hooks/useLiveData'
@@ -10,7 +9,6 @@ import LoadingSpinner from './LoadingSpinner'
 
 export default function Hero() {
   const tickerRef = useRef<HTMLDivElement>(null)
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isHoveringTicker, setIsHoveringTicker] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string>(
@@ -42,7 +40,7 @@ export default function Hero() {
     animationFrame = requestAnimationFrame(animate)
 
     return () => cancelAnimationFrame(animationFrame)
-  }, [isHoveringTicker, data]) // Added data as dependency to reset on new data
+  }, [isHoveringTicker, data])
 
   // Update last updated time when data changes
   useEffect(() => {
