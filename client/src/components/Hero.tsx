@@ -13,12 +13,18 @@ export default function Hero() {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isHoveringTicker, setIsHoveringTicker] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string>(
+    new Date().toLocaleString()
+  )
 
   const { data, loading, error } = useLiveData()
 
   useEffect(() => {
     const tickerElement = tickerRef.current
     if (!tickerElement) return
+
+    // Reset position to ensure smooth restart
+    tickerElement.style.transform = 'translateX(0)'
 
     let animationFrame: number
     let position = 0
@@ -36,18 +42,14 @@ export default function Hero() {
     animationFrame = requestAnimationFrame(animate)
 
     return () => cancelAnimationFrame(animationFrame)
-  }, [isHoveringTicker])
+  }, [isHoveringTicker, data]) // Added data as dependency to reset on new data
 
-  // const filters = [
-  //   'Brent',
-  //   'LPG',
-  //   'Doğal Gaz',
-  //   'Elektrik',
-  //   'Akaryakıt',
-  //   'EPDK',
-  //   'Döviz',
-  //   'TÜPRAŞ',
-  // ]
+  // Update last updated time when data changes
+  useEffect(() => {
+    if (!loading && !error && data) {
+      setLastUpdated(new Date().toLocaleString())
+    }
+  }, [data, loading, error])
 
   if (loading)
     return (
@@ -102,27 +104,6 @@ export default function Hero() {
       unit: '₺/L',
       icon: '🔥',
     },
-    // {
-    //   name: 'Dolar',
-    //   price: data.usdTry,
-    //   change: 1.2,
-    //   unit: '₺',
-    //   icon: '$',
-    // },
-    // {
-    //   name: 'Euro',
-    //   price: data.eurTry,
-    //   change: -0.5,
-    //   unit: '₺',
-    //   icon: '€',
-    // },
-    // {
-    //   name: 'Sterlin',
-    //   price: data.gbpTry,
-    //   change: 0.7,
-    //   unit: '₺',
-    //   icon: <CurrencyPoundIcon className='h-4 w-4 inline' />,
-    // },
     {
       name: 'Elektrik',
       price: 3.12,
@@ -167,46 +148,14 @@ export default function Hero() {
               placeholder='Brent, Sterlin, Dolar, Elektrik fiyatları ara...'
               className='w-full pl-12 pr-6 py-3 rounded-full bg-white text-sm text-white placeholder-green-900 focus:outline-none focus:ring-2 focus:ring-white/15 focus:ring-offset-2 shadow-lg transition-all duration-200 border border-white/20'
             />
-            <button type='submit' className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-900 text-white px-4 py-1 rounded-full text-sm font-small hover:bg-green-800 transition-colors'>
+            <button
+              type='submit'
+              className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-900 text-white px-4 py-1 rounded-full text-sm font-small hover:bg-green-800 transition-colors'
+            >
               Ara
             </button>
           </div>
         </div>
-
-        {/* <div className='mt-8 flex flex-wrap justify-center gap-3'>
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() =>
-                setSelectedFilter((prev) => (prev === filter ? null : filter))
-              }
-              className={`py-2.5 px-5 rounded-full text-sm font-medium transition-all duration-200 ${
-                selectedFilter === filter
-                  ? 'bg-yellow-400 text-gray-900 shadow-md hover:bg-yellow-500'
-                  : 'bg-white/10 hover:bg-white/10 text-white shadow-sm hover:shadow-md'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
-        </div> */}
-
-        {selectedFilter && (
-          <div className='mt-4 animate-fade-in'>
-            <p className='inline-flex items-center text-sm text-yellow-200 bg-white/50 px-4 py-2 rounded-full'>
-              <span>Seçilen filtre:</span>
-              <strong className='ml-1 bg-yellow-400/20 px-2 py-0.5 rounded-full'>
-                {selectedFilter}
-              </strong>
-              <button
-                onClick={() => setSelectedFilter(null)}
-                className='ml-2 text-white/70 hover:text-white'
-              >
-                ×
-              </button>
-            </p>
-          </div>
-        )}
 
         <div className='mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
           {tickerItems.map((item) => (
@@ -240,8 +189,8 @@ export default function Hero() {
                   : '—'}
                 <span className='ml-1 text-sm text-blue-200'>{item.unit}</span>
               </div>
-              <div className='mt-1 text-xs text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity'>
-                {new Date().toLocaleString()}
+              <div className='mt-1 text-xs text-blue-300 opacity-70 group-hover:opacity-100 transition-opacity'>
+                Son güncelleme: {lastUpdated}
               </div>
             </div>
           ))}
@@ -249,7 +198,7 @@ export default function Hero() {
       </div>
 
       <div
-        className='absolute bottom-0 left-0 right-0 bg-[#1A202C] backdrop-blur-sm overflow-hidden border-t border-white/10'
+        className='absolute bottom-0 left-0 right-0 bg-[#1A202C]/95 backdrop-blur-sm overflow-hidden border-t border-white/10'
         onMouseEnter={() => setIsHoveringTicker(true)}
         onMouseLeave={() => setIsHoveringTicker(false)}
       >
@@ -298,6 +247,10 @@ export default function Hero() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className='ml-4 text-xs text-white/60 hidden md:block'>
+              Son güncelleme: {lastUpdated}
             </div>
           </div>
         </div>
