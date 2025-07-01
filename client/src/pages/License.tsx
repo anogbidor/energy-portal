@@ -1,163 +1,214 @@
+// src/pages/LicensesPage.tsx
 import React from 'react'
 import { useLicenses } from '../hooks/useLicenses'
+import LicenseTable from '../components/LicenseTable'
+import LoadingSpinner from '../components/LoadingSpinner' // Import the LoadingSpinner component
+import type { LicenseItem } from '../hooks/useLicenses'
 
 type MarketType = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
 
 const MARKET_TYPES: MarketType[] = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 const TABLE_HEADERS = [
-  'Lisans No',
-  'Unvan',
-  'Durum',
-  'Başlangıç',
-  'Bitiş',
-  'İl / İlçe',
-  'Vergi No',
+  { key: 'lisansDurumu', label: 'EPDK Lisans Durumu' },
+  { key: 'lisansSahibiUnvani', label: 'Şirketi' },
+  { key: 'lisansNo', label: 'Lisans No' },
+  { key: 'unvan', label: 'Unvan' },
+  { key: 'vergiNo', label: 'Vergi No' },
+  { key: 'baslangicTarihi', label: 'Başlangıç Tarihi' },
+  { key: 'bitisTarihi', label: 'Bitiş Tarihi' },
+  { key: 'adres', label: 'Adres' },
+  { key: 'il', label: 'İl' },
+  { key: 'ilce', label: 'İlçe' },
+  { key: 'iptalTarihi', label: 'İptal Tarihi' },
 ]
+
+const ITEMS_PER_PAGE = 10
 
 export default function LicensesPage() {
   const { data, error, loading, setMarket } = useLicenses('lpg')
   const [activeMarket, setActiveMarket] = React.useState<MarketType>('lpg')
+  const [searchTerm, setSearchTerm] = React.useState('')
+  const [sortConfig, setSortConfig] = React.useState<{
+    key: string
+    direction: 'asc' | 'desc'
+  } | null>(null)
+  const [currentPage, setCurrentPage] = React.useState(1)
 
   const handleMarketChange = (market: MarketType) => {
     setMarket(market)
     setActiveMarket(market)
+    setCurrentPage(1)
+    setSearchTerm('')
+    setSortConfig(null)
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+    setCurrentPage(1)
+  }
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc'
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === 'asc'
+    ) {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const getSortableValue = (
+    info: LicenseItem['lisansGenelBilgi'],
+    key: string
+  ) => {
+    switch (key) {
+      case 'lisansDurumu':
+        return info.lisansDurumu
+      case 'lisansSahibiUnvani':
+      case 'unvan':
+        return info.lisansSahibiUnvani
+      case 'lisansNo':
+        return info.lisansNo
+      case 'vergiNo':
+        return info.vergiNo
+      case 'baslangicTarihi':
+        return new Date(info.baslangicTarihi).getTime()
+      case 'bitisTarihi':
+        return new Date(info.bitisTarihi).getTime()
+      case 'adres':
+        return info.adres?.mahalleCaddeSokak || ''
+      case 'il':
+        return info.adres?.il || ''
+      case 'ilce':
+        return info.adres?.ilce || ''
+      case 'iptalTarihi':
+        return info.iptalTarihi ? new Date(info.iptalTarihi).getTime() : 0
+      default:
+        return ''
+    }
+  }
+
+  const filteredData = React.useMemo(() => {
+    if (!data?.return) return []
+    const searchLower = searchTerm.toLowerCase()
+    return data.return.filter((item) => {
+      const info = item.lisansGenelBilgi
+      return (
+        info.lisansNo.toLowerCase().includes(searchLower) ||
+        info.lisansSahibiUnvani.toLowerCase().includes(searchLower) ||
+        info.vergiNo.toLowerCase().includes(searchLower) ||
+        (info.adres?.il && info.adres.il.toLowerCase().includes(searchLower)) ||
+        (info.adres?.ilce &&
+          info.adres.ilce.toLowerCase().includes(searchLower)) ||
+        info.lisansDurumu.toLowerCase().includes(searchLower)
+      )
+    })
+  }, [data, searchTerm])
+
+  const sortedData = React.useMemo(() => {
+    if (!sortConfig || filteredData.length === 0) return filteredData
+    return [...filteredData].sort((a, b) => {
+      const aValue = getSortableValue(a.lisansGenelBilgi, sortConfig.key)
+      const bValue = getSortableValue(b.lisansGenelBilgi, sortConfig.key)
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [filteredData, sortConfig])
+
+  const paginatedData = React.useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return sortedData.slice(start, start + ITEMS_PER_PAGE)
+  }, [sortedData, currentPage])
+
+  const goToPage = (page: number) => {
+    setCurrentPage(
+      Math.max(1, Math.min(page, Math.ceil(sortedData.length / ITEMS_PER_PAGE)))
+    )
   }
 
   return (
-    <main className='p-5 font-sans max-w-7xl mx-auto'>
+    <main className='bg-white p-5 font-sans max-w-auto mx-auto'>
       <header className='mb-6'>
-        <h1 className='text-2xl font-bold text-gray-800'>Lisans Sorgulama</h1>
-        <p className='text-gray-600 mt-1'>
+        <h1 className='text-2xl text-center font-bold text-green-900'>Lisans Sorgulama</h1>
+        <p className='text-green-900 mt-1 text-center'>
           Enerji Piyasası Düzenleme Kurumu lisans bilgileri
         </p>
       </header>
 
-      <nav
-        className='flex gap-2 mb-6 flex-wrap'
-        role='tablist'
-        aria-label='Enerji piyasası seçimi'
-      >
+      <nav className='flex gap-2 mb-6 flex-wrap' role='tablist'>
         {MARKET_TYPES.map((market) => {
           const isSelected = activeMarket === market
           return (
-            <button
-              type='button'
+            <div
               key={market}
               onClick={() => handleMarketChange(market)}
-              className={`px-4 py-2 rounded-md border font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+              className={`px-4 py-2 rounded-md border font-medium cursor-pointer transition-all ${
                 isSelected
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-inner'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-green-900 text-white border-blue-600'
+                  : 'border-gray-300 text-green-900 hover:bg-gray-100'
               }`}
               role='tab'
-              // aria-selected={`${isSelected}`}
-              aria-controls={`${market}-tabpanel`}
-              id={`${market}-tab`}
-              tabIndex={isSelected ? 0 : -1}
             >
               {market.toUpperCase()}
-            </button>
+            </div>
           )
         })}
       </nav>
 
-      <section
-        id={`${activeMarket}-tabpanel`}
-        role='tabpanel'
-        aria-labelledby={`${activeMarket}-tab`}
-        tabIndex={0}
-      >
+      <section>
         {loading ? (
           <div className='flex justify-center items-center py-12'>
-            <div className='animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500'></div>
-            <span className='sr-only'>Loading...</span>
+            <LoadingSpinner />
           </div>
         ) : error ? (
           <div className='bg-red-50 border-l-4 border-red-500 p-4 mb-6'>
-            <div className='flex'>
-              <div className='flex-shrink-0'>
-                <svg
-                  className='h-5 w-5 text-red-500'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+            <p className='text-sm text-red-700'>{error}</p>
+          </div>
+        ) : data ? (
+          <>
+            <div className='flex flex-col sm:flex-row justify-between gap-4 mb-4'>
+              <div className='relative flex-1 max-w-md'>
+                <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                  <svg
+                    className='h-5 w-5 text-gray-400'
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                </div>
+                <input
+                  type='text'
+                  className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                  placeholder='Arama...'
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
               </div>
-              <div className='ml-3'>
-                <p className='text-sm text-red-700'>{error}</p>
+              <div className='flex items-center text-sm text-gray-500'>
+                Toplam {filteredData.length} kayıt
               </div>
             </div>
-          </div>
-        ) : data && data.return.length > 0 ? (
-          <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg'>
-            <div className='overflow-x-auto'>
-              <table className='min-w-full divide-y divide-gray-300'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    {TABLE_HEADERS.map((header) => (
-                      <th
-                        key={header}
-                        scope='col'
-                        className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className='divide-y divide-gray-200 bg-white'>
-                  {data.return.map((item, i) => {
-                    const info = item.lisansGenelBilgi
-                    return (
-                      <tr
-                        key={`${info.lisansNo}-${i}`}
-                        className='hover:bg-gray-50'
-                      >
-                        <td className='whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900'>
-                          {info.lisansNo}
-                        </td>
-                        <td className='px-4 py-4 text-sm text-gray-500'>
-                          {info.lisansSahibiUnvani}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              info.lisansDurumu === 'Aktif'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {info.lisansDurumu}
-                          </span>
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
-                          {new Date(info.baslangicTarihi).toLocaleDateString(
-                            'tr-TR'
-                          )}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
-                          {new Date(info.bitisTarihi).toLocaleDateString(
-                            'tr-TR'
-                          )}
-                        </td>
-                        <td className='px-4 py-4 text-sm text-gray-500'>
-                          {info.adres.il} / {info.adres.ilce || '-'}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
-                          {info.vergiNo}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+
+            <LicenseTable
+              data={paginatedData}
+              tableHeaders={TABLE_HEADERS}
+              sortConfig={sortConfig}
+              onRequestSort={requestSort}
+              currentPage={currentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={sortedData.length}
+              onPageChange={goToPage}
+            />
+          </>
         ) : (
           <div className='text-center py-12 bg-gray-50 rounded-lg'>
             <svg
@@ -165,7 +216,6 @@ export default function LicensesPage() {
               fill='none'
               viewBox='0 0 24 24'
               stroke='currentColor'
-              aria-hidden='true'
             >
               <path
                 strokeLinecap='round'

@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 
 type Market = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
 
-interface LicenseItem {
+ export interface LicenseItem {
   lisansGenelBilgi: {
     lisansNo: string
     lisansSahibiUnvani: string
     lisansDurumu: string
     baslangicTarihi: string
     bitisTarihi: string
+    iptalTarihi?: string
     adres: {
       il?: string
       ilce?: string

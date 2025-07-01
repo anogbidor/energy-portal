@@ -15,6 +15,14 @@ interface SoapClientWithAsyncMethods extends Client {
 
 let soapClient: SoapClientWithAsyncMethods | null = null
 
+// License status mapping (Turkish -> API codes)
+const LISANS_STATUS_MAP: Record<string, string> = {
+  Sonlandırıldı: 'SONLANDIRILDI',
+  'İptal Edildi': 'IPTAL_EDILDI',
+  'Süresi Doldu': 'SURESI_DOLDU',
+  'Yürürlükten Kaldırıldı': 'YURURLUKTEN_KALDIRILDI',
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -31,10 +39,17 @@ export default async function handler(
 
   // Fixed method name for LPG
   const method = 'lpgDagiticiLisansSorgula'
-  const lisansDurumu =
+
+  // Get lisansDurumu from query or default
+  let lisansDurumu =
     typeof req.query.lisansDurumu === 'string'
       ? req.query.lisansDurumu
       : 'ONAYLANDI'
+
+  // Map Turkish status to API status code if exists
+  if (LISANS_STATUS_MAP[lisansDurumu]) {
+    lisansDurumu = LISANS_STATUS_MAP[lisansDurumu]
+  }
 
   try {
     if (!soapClient) {

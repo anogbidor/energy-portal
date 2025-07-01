@@ -15,6 +15,14 @@ interface SoapClientWithAsyncMethods extends Client {
 
 let soapClient: SoapClientWithAsyncMethods | null = null
 
+// License status mapping (Turkish -> API codes)
+const LISANS_STATUS_MAP: Record<string, string> = {
+  Sonlandırıldı: 'SONLANDIRILDI',
+  'İptal Edildi': 'IPTAL_EDILDI',
+  'Süresi Doldu': 'SURESI_DOLDU',
+  'Yürürlükten Kaldırıldı': 'YURURLUKTEN_KALDIRILDI',
+}
+
 function enableCors(req: NextApiRequest, res: NextApiResponse<Data>): boolean {
   res.setHeader('Access-Control-Allow-Origin', '*') // allow all origins, adjust as needed for production
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
@@ -33,8 +41,17 @@ export default async function handler(
 ) {
   if (enableCors(req, res)) return
 
-  const { method = 'petrolDagiticiLisansSorgula', lisansDurumu = 'ONAYLANDI' } =
+  let { method = 'petrolDagiticiLisansSorgula', lisansDurumu = 'ONAYLANDI' } =
     req.query
+
+  // Ensure strings
+  method = String(method)
+  lisansDurumu = String(lisansDurumu)
+
+  // Map Turkish status to API code if present
+  if (LISANS_STATUS_MAP[lisansDurumu]) {
+    lisansDurumu = LISANS_STATUS_MAP[lisansDurumu]
+  }
 
   try {
     if (!soapClient) {
@@ -47,12 +64,11 @@ export default async function handler(
       )
     }
 
-    const methodAsyncName = String(method) + 'Async'
-
+    const methodAsyncName = method + 'Async'
     const methodFn = soapClient[methodAsyncName]
 
     if (typeof methodFn === 'function') {
-      const args = { lisansDurumu: String(lisansDurumu) }
+      const args = { lisansDurumu }
       const result = await methodFn.call(soapClient, args)
       if (Array.isArray(result) && result.length > 0) {
         return res.status(200).json({ success: true, data: result[0] })
