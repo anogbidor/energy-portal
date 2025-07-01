@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 
 type Market = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
 
- export interface LicenseItem {
+export interface LicenseItem {
   lisansGenelBilgi: {
     lisansNo: string
     lisansSahibiUnvani: string
-    lisansDurumu: string
+    lisansDurumu: string // this will be mapped below
     baslangicTarihi: string
     bitisTarihi: string
     iptalTarihi?: string
@@ -41,6 +41,14 @@ const endpoints: Record<Market, string> = {
   elektrik: `${API_BASE_URL}/api/elektrik?method=elektrikDagitimLisansiSorgula&lisansDurumu=ONAYLANDI`,
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  SONLANDIRILDI: 'Sonlandırıldı',
+  IPTAL_EDILDI: 'İptal Edildi',
+  SURESI_DOLDU: 'Süresi Doldu',
+  YURURLUKTEN_KALDIRILDI: 'Yürürlükten Kaldırıldı',
+  // You can add more mappings here if needed
+}
+
 export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
   const [market, setMarket] = useState<Market>(initialMarket)
   const [data, setData] = useState<Licenses>()
@@ -60,8 +68,25 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
         const json = await res.json()
 
         if (json.success) {
-          if (json.data && typeof json.data.return !== 'undefined') {
-            setData(json.data)
+          if (json.data && Array.isArray(json.data.return)) {
+            // Map lisansDurumu code to label for each license item
+            const mappedData = {
+              ...json.data,
+              return: json.data.return.map((item: LicenseItem) => {
+                const code = item.lisansGenelBilgi.lisansDurumu
+                  .toUpperCase()
+                  .replace(/\s+/g, '_')
+                return {
+                  ...item,
+                  lisansGenelBilgi: {
+                    ...item.lisansGenelBilgi,
+                    lisansDurumu:
+                      STATUS_LABELS[code] || item.lisansGenelBilgi.lisansDurumu,
+                  },
+                }
+              }),
+            }
+            setData(mappedData)
           } else {
             setError('Invalid data format returned from API')
           }

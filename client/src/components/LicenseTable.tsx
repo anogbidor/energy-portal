@@ -1,4 +1,3 @@
-// import React from 'react'
 import type { LicenseItem } from '../hooks/useLicenses'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
@@ -12,6 +11,13 @@ interface LicenseTableProps {
   itemsPerPage: number
   totalItems: number
   onPageChange: (page: number) => void
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  SONLANDIRILDI: 'Sonlandırıldı',
+  IPTAL_EDILDI: 'İptal Edildi',
+  SURESI_DOLDU: 'Süresi Doldu',
+  YURURLUKTEN_KALDIRILDI: 'Yürürlükten Kaldırıldı',
 }
 
 export default function LicenseTable({
@@ -33,6 +39,12 @@ export default function LicenseTable({
 
   const goToPage = (page: number) => {
     onPageChange(Math.max(1, Math.min(page, totalPages)))
+  }
+
+  // Helper to display human-readable lisansDurumu
+  function displayStatus(status: string) {
+    const normalized = status.toUpperCase().replace(/\s+/g, '_')
+    return STATUS_LABELS[normalized] || status
   }
 
   return (
@@ -64,6 +76,8 @@ export default function LicenseTable({
               {data.length > 0 ? (
                 data.map((item, i) => {
                   const info = item.lisansGenelBilgi
+                  const statusLabel = displayStatus(info.lisansDurumu)
+
                   return (
                     <tr
                       key={`${info.lisansNo}-${i}`}
@@ -72,12 +86,12 @@ export default function LicenseTable({
                       <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            info.lisansDurumu === 'Aktif'
+                            statusLabel === 'Aktif'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {info.lisansDurumu}
+                          {statusLabel}
                         </span>
                       </td>
                       <td className='px-4 py-4 text-sm text-gray-500'>
