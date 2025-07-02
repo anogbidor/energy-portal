@@ -8,49 +8,32 @@ const WSDL_URL =
 
 type Data = { success: true; data: unknown } | { success: false; error: string }
 
-// Define a safe typed client interface for dynamic async methods
 interface SoapClientWithAsyncMethods extends Client {
   [methodName: string]: ((args: unknown) => Promise<unknown>) | unknown
 }
 
 let soapClient: SoapClientWithAsyncMethods | null = null
 
-// License status mapping (Turkish -> API codes)
-const LISANS_STATUS_MAP: Record<string, string> = {
-  Sonlandırıldı: 'SONLANDIRILDI',
-  'İptal Edildi': 'IPTAL_EDILDI',
-  'Süresi Doldu': 'SURESI_DOLDU',
-  'Yürürlükten Kaldırıldı': 'YURURLUKTEN_KALDIRILDI',
+// Cache object
+let cache: {
+  timestamp: number
+  data: unknown | null
+} = {
+  timestamp: 0,
+  data: null,
 }
 
-function enableCors(req: NextApiRequest, res: NextApiResponse<Data>): boolean {
-  res.setHeader('Access-Control-Allow-Origin', '*') // allow all origins, adjust as needed for production
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-
-  if (req.method === 'OPTIONS') {
-    res.status(204).end()
-    return true
-  }
-  return false
-}
+const CACHE_TTL = 1000 * 60 * 20 // 1 hour in milliseconds
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  if (enableCors(req, res)) return
+  const now = Date.now()
 
-  let { method = 'petrolDagiticiLisansSorgula', lisansDurumu = 'ONAYLANDI' } =
-    req.query
-
-  // Ensure strings
-  method = String(method)
-  lisansDurumu = String(lisansDurumu)
-
-  // Map Turkish status to API code if present
-  if (LISANS_STATUS_MAP[lisansDurumu]) {
-    lisansDurumu = LISANS_STATUS_MAP[lisansDurumu]
+  // If cache is valid, return cached data
+  if (cache.data && now - cache.timestamp < CACHE_TTL) {
+    return res.status(200).json({ success: true, data: cache.data })
   }
 
   try {
@@ -64,14 +47,21 @@ export default async function handler(
       )
     }
 
+    const method = 'petrolDagiticiLisansSorgula'
     const methodAsyncName = method + 'Async'
     const methodFn = soapClient[methodAsyncName]
 
     if (typeof methodFn === 'function') {
-      const args = { lisansDurumu }
+      const args = { lisansDurumu: 'ONAYLANDI' }
       const result = await methodFn.call(soapClient, args)
       if (Array.isArray(result) && result.length > 0) {
-        return res.status(200).json({ success: true, data: result[0] })
+        const responseData = result[0]
+        // Update cache
+        cache = {
+          timestamp: now,
+          data: responseData,
+        }
+        return res.status(200).json({ success: true, data: responseData })
       } else {
         return res
           .status(500)

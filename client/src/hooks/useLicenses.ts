@@ -1,6 +1,7 @@
+// src/hooks/useLicenses.ts
 import { useState, useEffect } from 'react'
 
-type Market = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
+export type Market = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
 
 export interface LicenseItem {
   lisansGenelBilgi: {
@@ -21,27 +22,22 @@ export interface LicenseItem {
   satisiYapilacakYakitTurleri?: string[]
 }
 
-interface Licenses {
-  return: LicenseItem[]
-}
-
-interface UseLicensesResult {
-  data?: Licenses
-  error?: string
-  loading: boolean
-  setMarket: (market: Market) => void
-  setStatus: (status: string) => void // <-- added
-  status: string // <-- added
-}
-
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
-// Instead of fixed endpoints, we build URLs dynamically now
-const methodForMarket: Record<Market, string> = {
-  petrol: 'petrolDagiticiLisansSorgula',
-  lpg: 'lpgDagiticiLisansSorgula',
-  dogalgaz: 'dogalgazDagitimLisansSorgula',
-  elektrik: 'elektrikDagitimLisansiSorgula',
+const STATUSES = [
+  'ONAYLANDI',
+  'SONLANDIRILDI',
+  'IPTAL_EDILDI',
+  'SURESI_DOLDU',
+  'YURURLUKTEN_KALDIRILDI',
+  'FAALIYETI_GECICI_DURDURULDU',
+]
+
+const endpoints: Record<Market, string> = {
+  petrol: `${API_BASE_URL}/api/petrolLicenses?method=petrolDagiticiLisansSorgula`,
+  lpg: `${API_BASE_URL}/api/lpg?method=lpgDagiticiLisansSorgula`,
+  dogalgaz: `${API_BASE_URL}/api/dogalgaz?method=dogalgazDagitimLisansSorgula`,
+  elektrik: `${API_BASE_URL}/api/elektrik?method=elektrikDagitimLisansiSorgula`,
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -53,56 +49,69 @@ const STATUS_LABELS: Record<string, string> = {
   FAALIYETI_GECICI_DURDURULDU: 'Faaliyeti Geçici Durduruldu',
 }
 
-export function useLicenses(
-  initialMarket: Market = 'lpg',
-  initialStatus: string = 'ONAYLANDI' // <-- added initialStatus
-): UseLicensesResult {
+interface UseLicensesResult {
+  data: LicenseItem[] | null
+  error?: string
+  loading: boolean
+  setMarket: (market: Market) => void
+}
+
+export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
   const [market, setMarket] = useState<Market>(initialMarket)
-  const [status, setStatus] = useState<string>(initialStatus) // <-- added status state
-  const [data, setData] = useState<Licenses>()
+  const [data, setData] = useState<LicenseItem[] | null>(null)
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!market || !status) return
+    if (!market) return
 
-    const fetchData = async () => {
+    const fetchAllStatuses = async () => {
       setLoading(true)
       setError(undefined)
-      setData(undefined)
+      setData(null)
 
       try {
-        // Build URL dynamically based on current market and status
-        const url = `${API_BASE_URL}/api/${market}?method=${methodForMarket[market]}&lisansDurumu=${status}`
+        const allResults: LicenseItem[] = []
 
-        const res = await fetch(url)
-        const json = await res.json()
+        // Fetch for each status, then concat results
+        for (const status of STATUSES) {
+          const url = `${endpoints[market]}&lisansDurumu=${status}`
+          const res = await fetch(url)
+          const json = await res.json()
 
-        if (json.success) {
-          if (json.data && Array.isArray(json.data.return)) {
-            const mappedData = {
-              ...json.data,
-              return: json.data.return.map((item: LicenseItem) => {
-                const code = item.lisansGenelBilgi.lisansDurumu
-                  .toUpperCase()
-                  .replace(/\s+/g, '_')
-                return {
-                  ...item,
-                  lisansGenelBilgi: {
-                    ...item.lisansGenelBilgi,
-                    lisansDurumu:
-                      STATUS_LABELS[code] || item.lisansGenelBilgi.lisansDurumu,
-                  },
-                }
-              }),
-            }
-            setData(mappedData)
-          } else {
-            setError('Invalid data format returned from API')
+          if (json.success && json.data && Array.isArray(json.data.return)) {
+            allResults.push(...json.data.return)
+          } else if (!json.success) {
+            throw new Error(json.error || 'API returned error')
           }
-        } else {
-          setError(json.error || 'API returned error')
         }
+
+        // Remove duplicates by lisansNo (if any)
+        const uniqueResults = allResults.filter(
+          (item, index, self) =>
+            index ===
+            self.findIndex(
+              (t) =>
+                t.lisansGenelBilgi.lisansNo === item.lisansGenelBilgi.lisansNo
+            )
+        )
+
+        // Map lisansDurumu code to label
+        const mappedResults = uniqueResults.map((item) => {
+          const code = item.lisansGenelBilgi.lisansDurumu
+            .toUpperCase()
+            .replace(/\s+/g, '_')
+          return {
+            ...item,
+            lisansGenelBilgi: {
+              ...item.lisansGenelBilgi,
+              lisansDurumu:
+                STATUS_LABELS[code] || item.lisansGenelBilgi.lisansDurumu,
+            },
+          }
+        })
+
+        setData(mappedResults)
       } catch (e) {
         setError(`Network error: ${e}`)
       } finally {
@@ -110,8 +119,8 @@ export function useLicenses(
       }
     }
 
-    fetchData()
-  }, [market, status]) // <-- listen to both market and status changes
+    fetchAllStatuses()
+  }, [market])
 
-  return { data, error, loading, setMarket, setStatus, status } // <-- expose setStatus and status
+  return { data, error, loading, setMarket }
 }

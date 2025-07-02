@@ -1,13 +1,12 @@
 // src/pages/LicensesPage.tsx
 import React from 'react'
-import { useLicenses } from '../hooks/useLicenses'
+import { useLicenses, type Market } from '../hooks/useLicenses' // Import Market type
 import LicenseTable from '../components/LicenseTable'
-import LoadingSpinner from '../components/LoadingSpinner' // Import the LoadingSpinner component
+import LoadingSpinner from '../components/LoadingSpinner'
 import type { LicenseItem } from '../hooks/useLicenses'
 
-type MarketType = 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'
+const MARKET_TYPES: Market[] = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 
-const MARKET_TYPES: MarketType[] = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 const TABLE_HEADERS = [
   { key: 'lisansDurumu', label: 'EPDK Lisans Durumu' },
   { key: 'lisansSahibiUnvani', label: 'Şirketi' },
@@ -22,11 +21,11 @@ const TABLE_HEADERS = [
   { key: 'iptalTarihi', label: 'İptal Tarihi' },
 ]
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 40
 
 export default function LicensesPage() {
   const { data, error, loading, setMarket } = useLicenses('lpg')
-  const [activeMarket, setActiveMarket] = React.useState<MarketType>('lpg')
+  const [activeMarket, setActiveMarket] = React.useState<Market>('lpg')
   const [searchTerm, setSearchTerm] = React.useState('')
   const [sortConfig, setSortConfig] = React.useState<{
     key: string
@@ -34,7 +33,8 @@ export default function LicensesPage() {
   } | null>(null)
   const [currentPage, setCurrentPage] = React.useState(1)
 
-  const handleMarketChange = (market: MarketType) => {
+  // When market changes, reset filters and pagination
+  const handleMarketChange = (market: Market) => {
     setMarket(market)
     setActiveMarket(market)
     setCurrentPage(1)
@@ -59,6 +59,7 @@ export default function LicensesPage() {
     setSortConfig({ key, direction })
   }
 
+  // Extract sortable value from license info for sorting
   const getSortableValue = (
     info: LicenseItem['lisansGenelBilgi'],
     key: string
@@ -90,10 +91,11 @@ export default function LicensesPage() {
     }
   }
 
+  // Filter data by search term
   const filteredData = React.useMemo(() => {
-    if (!data?.return) return []
+    if (!data) return []
     const searchLower = searchTerm.toLowerCase()
-    return data.return.filter((item) => {
+    return data.filter((item) => {
       const info = item.lisansGenelBilgi
       return (
         info.lisansNo.toLowerCase().includes(searchLower) ||
@@ -107,17 +109,31 @@ export default function LicensesPage() {
     })
   }, [data, searchTerm])
 
+  // Sort filtered data with default descending baslangicTarihi
   const sortedData = React.useMemo(() => {
-    if (!sortConfig || filteredData.length === 0) return filteredData
+    if (filteredData.length === 0) return filteredData
+
+    if (!sortConfig) {
+      // Default: latest baslangicTarihi first
+      return [...filteredData].sort(
+        (a, b) =>
+          new Date(b.lisansGenelBilgi.baslangicTarihi).getTime() -
+          new Date(a.lisansGenelBilgi.baslangicTarihi).getTime()
+      )
+    }
+
+    // User-defined sorting
     return [...filteredData].sort((a, b) => {
       const aValue = getSortableValue(a.lisansGenelBilgi, sortConfig.key)
       const bValue = getSortableValue(b.lisansGenelBilgi, sortConfig.key)
+
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
       return 0
     })
   }, [filteredData, sortConfig])
 
+  // Paginate sorted data
   const paginatedData = React.useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE
     return sortedData.slice(start, start + ITEMS_PER_PAGE)
@@ -132,30 +148,42 @@ export default function LicensesPage() {
   return (
     <main className='bg-white p-5 font-sans max-w-auto mx-auto'>
       <header className='mb-6'>
-        <h1 className='text-2xl text-center font-bold text-green-900'>Lisans Sorgulama</h1>
+        <h1 className='text-2xl text-center font-bold text-green-900'>
+          Lisans Sorgulama
+        </h1>
         <p className='text-green-900 mt-1 text-center'>
           Enerji Piyasası Düzenleme Kurumu lisans bilgileri
         </p>
       </header>
 
-      <nav className='flex gap-2 mb-6 flex-wrap' role='tablist'>
-        {MARKET_TYPES.map((market) => {
-          const isSelected = activeMarket === market
-          return (
-            <div
-              key={market}
-              onClick={() => handleMarketChange(market)}
-              className={`px-4 py-2 rounded-md border font-medium cursor-pointer transition-all ${
-                isSelected
-                  ? 'bg-green-900 text-white border-blue-600'
-                  : 'border-gray-300 text-green-900 hover:bg-gray-100'
-              }`}
-              role='tab'
-            >
-              {market.toUpperCase()}
-            </div>
-          )
-        })}
+      <nav className='mb-8'>
+        <div className='flex justify-center space-x-1 bg-gray-100/50 p-1 rounded-full max-w-md mx-auto'>
+          {MARKET_TYPES.map((market) => {
+            const isSelected = activeMarket === market
+            return (
+              <button
+                key={market}
+                onClick={() => handleMarketChange(market)}
+                className={`
+            px-6 py-2 rounded-full text-sm font-medium
+            transition-all duration-200
+            ${
+              isSelected
+                ? 'bg-white text-gray-900 shadow-sm font-semibold'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
+            }
+            whitespace-nowrap
+          `}
+              >
+                {market === 'dogalgaz'
+                  ? 'Doğalgaz '
+                  : market === 'elektrik'
+                  ? 'Elektrik'
+                  : market.toUpperCase()}
+              </button>
+            )
+          })}
+        </div>
       </nav>
 
       <section>
@@ -167,7 +195,7 @@ export default function LicensesPage() {
           <div className='bg-red-50 border-l-4 border-red-500 p-4 mb-6'>
             <p className='text-sm text-red-700'>{error}</p>
           </div>
-        ) : data ? (
+        ) : data && data.length > 0 ? (
           <>
             <div className='flex flex-col sm:flex-row justify-between gap-4 mb-4'>
               <div className='relative flex-1 max-w-md'>
@@ -191,6 +219,7 @@ export default function LicensesPage() {
                   placeholder='Arama...'
                   value={searchTerm}
                   onChange={handleSearchChange}
+                  aria-label='Lisans arama'
                 />
               </div>
               <div className='flex items-center text-sm text-gray-500'>

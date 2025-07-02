@@ -15,6 +15,11 @@ interface SoapClientWithAsyncMethods extends Client {
 
 let soapClient: SoapClientWithAsyncMethods | null = null
 
+// Cache storage
+let cachedData: unknown = null
+let lastFetchedAt = 0
+const CACHE_TTL = 1000 * 60 * 20 // 20 minutes
+
 // License status mapping (Turkish -> API codes)
 const LISANS_STATUS_MAP: Record<string, string> = {
   Sonlandırıldı: 'SONLANDIRILDI',
@@ -49,6 +54,12 @@ export default async function handler(
     lisansDurumu = LISANS_STATUS_MAP[lisansDurumu]
   }
 
+  // Return cached data if fresh
+  if (cachedData && Date.now() - lastFetchedAt < CACHE_TTL) {
+    console.log('Serving cached elektrik data')
+    return res.status(200).json({ success: true, data: cachedData })
+  }
+
   try {
     if (!soapClient) {
       const soap = await import('soap')
@@ -67,7 +78,9 @@ export default async function handler(
       const args = { lisansDurumu }
       const result = await methodFn.call(soapClient, args)
       if (Array.isArray(result) && result.length > 0) {
-        return res.status(200).json({ success: true, data: result[0] })
+        cachedData = result[0]
+        lastFetchedAt = Date.now()
+        return res.status(200).json({ success: true, data: cachedData })
       } else {
         return res
           .status(500)

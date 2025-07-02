@@ -1,3 +1,4 @@
+// import React from 'react'
 import type { LicenseItem } from '../hooks/useLicenses'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
@@ -18,6 +19,8 @@ const STATUS_LABELS: Record<string, string> = {
   IPTAL_EDILDI: 'İptal Edildi',
   SURESI_DOLDU: 'Süresi Doldu',
   YURURLUKTEN_KALDIRILDI: 'Yürürlükten Kaldırıldı',
+  FAALIYETI_GECICI_DURDURULDU: 'Faaliyeti Geçici Durduruldu',
+  ONAYLANDI: 'Yürürlükte',
 }
 
 export default function LicenseTable({
@@ -41,7 +44,6 @@ export default function LicenseTable({
     onPageChange(Math.max(1, Math.min(page, totalPages)))
   }
 
-  // Helper to display human-readable lisansDurumu
   function displayStatus(status: string) {
     const normalized = status.toUpperCase().replace(/\s+/g, '_')
     return STATUS_LABELS[normalized] || status
@@ -59,12 +61,12 @@ export default function LicenseTable({
                   <th
                     key={header.key}
                     scope='col'
-                    className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100'
+                    className='px-3 py-2 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:bg-gray-100'
                     onClick={() => onRequestSort(header.key)}
                   >
                     <div className='flex items-center'>
                       {header.label}
-                      <span className='ml-1'>
+                      <span className='ml-1 text-xs'>
                         {getSortIndicator(header.key)}
                       </span>
                     </div>
@@ -78,52 +80,65 @@ export default function LicenseTable({
                   const info = item.lisansGenelBilgi
                   const statusLabel = displayStatus(info.lisansDurumu)
 
+                  const badgeColorClass = (() => {
+                    switch (statusLabel) {
+                      case 'Yürürlükte':
+                        return 'bg-green-100 text-green-800'
+                      case 'Faaliyeti Geçici Durduruldu':
+                        return 'bg-yellow-100 text-yellow-800'
+                      case 'İptal Edildi':
+                        return 'bg-red-100 text-red-900'
+                      case 'Süresi Doldu':
+                        return 'bg-purple-100 text-purple-800'
+                      case 'Sonlandırıldı':
+                        return 'bg-gray-100 text-gray-800'
+                      default:
+                        return 'bg-gray-100 text-gray-800'
+                    }
+                  })()
+
                   return (
                     <tr
                       key={`${info.lisansNo}-${i}`}
                       className='hover:bg-gray-50'
                     >
-                      <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            statusLabel === 'Aktif'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeColorClass}`}
                         >
                           {statusLabel}
                         </span>
                       </td>
-                      <td className='px-4 py-4 text-sm text-gray-500'>
+                      <td className='px-3 py-2 text-xs text-gray-500'>
                         {info.lisansSahibiUnvani}
                       </td>
-                      <td className='whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900'>
                         {info.lisansNo}
                       </td>
-                      <td className='px-4 py-4 text-sm text-gray-500'>
+                      <td className='px-3 py-2 text-xs text-gray-500'>
                         {info.lisansSahibiUnvani}
                       </td>
-                      <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
                         {info.vergiNo}
                       </td>
-                      <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
                         {new Date(info.baslangicTarihi).toLocaleDateString(
                           'tr-TR'
                         )}
                       </td>
-                      <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
                         {new Date(info.bitisTarihi).toLocaleDateString('tr-TR')}
                       </td>
-                      <td className='px-4 py-4 text-sm text-gray-500'>
+                      <td className='px-3 py-2 text-xs text-gray-500'>
                         {info.adres?.mahalleCaddeSokak || '-'}
                       </td>
-                      <td className='px-4 py-4 text-sm text-gray-500'>
+                      <td className='px-3 py-2 text-xs text-gray-500'>
                         {info.adres?.il || '-'}
                       </td>
-                      <td className='px-4 py-4 text-sm text-gray-500'>
+                      <td className='px-3 py-2 text-xs text-gray-500'>
                         {info.adres?.ilce || '-'}
                       </td>
-                      <td className='whitespace-nowrap px-4 py-4 text-sm text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
                         {info.iptalTarihi ? (
                           new Date(info.iptalTarihi).toLocaleDateString('tr-TR')
                         ) : (
@@ -137,7 +152,7 @@ export default function LicenseTable({
                 <tr>
                   <td
                     colSpan={tableHeaders.length}
-                    className='px-4 py-4 text-center text-sm text-gray-500'
+                    className='px-3 py-2 text-center text-xs text-gray-500'
                   >
                     Veri bulunamadı
                   </td>
@@ -150,10 +165,10 @@ export default function LicenseTable({
 
       {/* Pagination controls */}
       {totalPages > 1 && (
-        <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg'>
+        <div className='flex items-center justify-between px-4 py-2 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg'>
           <div className='flex-1 flex items-center justify-between'>
             <div>
-              <p className='text-sm text-gray-700'>
+              <p className='text-xs text-gray-700'>
                 <span className='font-medium'>
                   {(currentPage - 1) * itemsPerPage + 1}
                 </span>{' '}
@@ -168,7 +183,7 @@ export default function LicenseTable({
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                className={`relative inline-flex items-center px-2 py-1 rounded-l-md border border-gray-300 bg-white text-xs font-medium ${
                   currentPage === 1
                     ? 'text-gray-300'
                     : 'text-gray-500 hover:bg-gray-50'
@@ -188,12 +203,13 @@ export default function LicenseTable({
                   pageNum = currentPage - 2 + i
                 }
                 return (
-                  <button
+                 <button
+                    type='button'
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                    className={`relative inline-flex items-center px-3 py-1 border text-xs font-medium ${
                       currentPage === pageNum
-                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                        ? 'z-10 bg-green-50 border-green-500 text-green-900'
                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                     }`}
                   >
@@ -204,7 +220,7 @@ export default function LicenseTable({
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                className={`relative inline-flex items-center px-2 py-1 rounded-r-md border border-gray-300 bg-white text-xs font-medium ${
                   currentPage === totalPages
                     ? 'text-gray-300'
                     : 'text-gray-500 hover:bg-gray-50'
