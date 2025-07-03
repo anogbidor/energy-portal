@@ -23,16 +23,27 @@ let cache: {
   data: null,
 }
 
-const CACHE_TTL = 1000 * 60 * 20 // 1 hour in milliseconds
+const CACHE_TTL = 1000 * 60 * 20 // 20 minutes
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*') // For development. Use specific origin in production
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  // Quickly handle OPTIONS preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end()
+  }
+
   const now = Date.now()
 
-  // If cache is valid, return cached data
+  // Return cached data if fresh
   if (cache.data && now - cache.timestamp < CACHE_TTL) {
+    console.log('Serving cached petrol data')
     return res.status(200).json({ success: true, data: cache.data })
   }
 
@@ -47,21 +58,20 @@ export default async function handler(
       )
     }
 
-    const method = 'petrolDagiticiLisansSorgula'
+    const method = 'petrolDagiticiLisansSorgula' // Your SOAP method
     const methodAsyncName = method + 'Async'
     const methodFn = soapClient[methodAsyncName]
 
     if (typeof methodFn === 'function') {
       const args = { lisansDurumu: 'ONAYLANDI' }
       const result = await methodFn.call(soapClient, args)
+
       if (Array.isArray(result) && result.length > 0) {
-        const responseData = result[0]
-        // Update cache
         cache = {
           timestamp: now,
-          data: responseData,
+          data: result[0],
         }
-        return res.status(200).json({ success: true, data: responseData })
+        return res.status(200).json({ success: true, data: result[0] })
       } else {
         return res
           .status(500)
