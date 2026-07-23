@@ -59,11 +59,8 @@ export default function LicensesPage() {
     setSortConfig({ key, direction })
   }
 
-  // Extract sortable value from license info for sorting
-  const getSortableValue = (
-    info: LicenseItem['lisansGenelBilgi'],
-    key: string
-  ) => {
+  // Extract sortable value from a license item for sorting
+  const getSortableValue = (info: LicenseItem, key: string) => {
     switch (key) {
       case 'lisansDurumu':
         return info.lisansDurumu
@@ -79,13 +76,15 @@ export default function LicensesPage() {
       case 'bitisTarihi':
         return new Date(info.bitisTarihi).getTime()
       case 'adres':
-        return info.adres?.mahalleCaddeSokak || ''
+        return info.adres || ''
       case 'il':
-        return info.adres?.il || ''
+        return info.il || ''
       case 'ilce':
-        return info.adres?.ilce || ''
+        return info.ilce || ''
       case 'iptalTarihi':
-        return info.iptalTarihi ? new Date(info.iptalTarihi).getTime() : 0
+        return info.iptalSonaErdirmeTarihi
+          ? new Date(info.iptalSonaErdirmeTarihi).getTime()
+          : 0
       default:
         return ''
     }
@@ -96,15 +95,13 @@ export default function LicensesPage() {
     if (!data) return []
     const searchLower = searchTerm.toLowerCase()
     return data.filter((item) => {
-      const info = item.lisansGenelBilgi
       return (
-        info.lisansNo.toLowerCase().includes(searchLower) ||
-        info.lisansSahibiUnvani.toLowerCase().includes(searchLower) ||
-        info.vergiNo.toLowerCase().includes(searchLower) ||
-        (info.adres?.il && info.adres.il.toLowerCase().includes(searchLower)) ||
-        (info.adres?.ilce &&
-          info.adres.ilce.toLowerCase().includes(searchLower)) ||
-        info.lisansDurumu.toLowerCase().includes(searchLower)
+        item.lisansNo.toLowerCase().includes(searchLower) ||
+        item.lisansSahibiUnvani.toLowerCase().includes(searchLower) ||
+        item.vergiNo.toLowerCase().includes(searchLower) ||
+        (item.il && item.il.toLowerCase().includes(searchLower)) ||
+        (item.ilce && item.ilce.toLowerCase().includes(searchLower)) ||
+        item.lisansDurumu.toLowerCase().includes(searchLower)
       )
     })
   }, [data, searchTerm])
@@ -117,15 +114,15 @@ export default function LicensesPage() {
       // Default: latest baslangicTarihi first
       return [...filteredData].sort(
         (a, b) =>
-          new Date(b.lisansGenelBilgi.baslangicTarihi).getTime() -
-          new Date(a.lisansGenelBilgi.baslangicTarihi).getTime()
+          new Date(b.baslangicTarihi).getTime() -
+          new Date(a.baslangicTarihi).getTime()
       )
     }
 
     // User-defined sorting
     return [...filteredData].sort((a, b) => {
-      const aValue = getSortableValue(a.lisansGenelBilgi, sortConfig.key)
-      const bValue = getSortableValue(b.lisansGenelBilgi, sortConfig.key)
+      const aValue = getSortableValue(a, sortConfig.key)
+      const bValue = getSortableValue(b, sortConfig.key)
 
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1

@@ -1,0 +1,25 @@
+name: Ingest EPDK licenses
+
+on:
+  schedule:
+    # Every 6 hours -- frequent enough for same-day visibility on
+    # regulatory/license changes without hammering EPDK's own rate limiter
+    # or needing Vercel's paid tier for finer-grained cron.
+    - cron: '0 */6 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger ingestion endpoint
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-licenses" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 400 ]; then
+            echo "Ingestion request failed"
+            exit 1
+          fi

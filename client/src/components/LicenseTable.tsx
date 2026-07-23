@@ -77,8 +77,7 @@ export default function LicenseTable({
             <tbody className='divide-y divide-gray-200 bg-white'>
               {data.length > 0 ? (
                 data.map((item, i) => {
-                  const info = item.lisansGenelBilgi
-                  const statusLabel = displayStatus(info.lisansDurumu)
+                  const statusLabel = displayStatus(item.lisansDurumu)
 
                   const badgeColorClass = (() => {
                     switch (statusLabel) {
@@ -99,7 +98,7 @@ export default function LicenseTable({
 
                   return (
                     <tr
-                      key={`${info.lisansNo}-${i}`}
+                      key={`${item.lisansNo}-${i}`}
                       className='hover:bg-gray-50'
                     >
                       <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
@@ -110,37 +109,37 @@ export default function LicenseTable({
                         </span>
                       </td>
                       <td className='px-3 py-2 text-xs text-gray-500'>
-                        {info.lisansSahibiUnvani}
+                        {item.lisansSahibiUnvani}
                       </td>
                       <td className='whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900'>
-                        {info.lisansNo}
+                        {item.lisansNo}
                       </td>
                       <td className='px-3 py-2 text-xs text-gray-500'>
-                        {info.lisansSahibiUnvani}
+                        {item.lisansSahibiUnvani}
                       </td>
                       <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
-                        {info.vergiNo}
+                        {item.vergiNo}
                       </td>
                       <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
-                        {new Date(info.baslangicTarihi).toLocaleDateString(
+                        {new Date(item.baslangicTarihi).toLocaleDateString(
                           'tr-TR'
                         )}
                       </td>
                       <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
-                        {new Date(info.bitisTarihi).toLocaleDateString('tr-TR')}
+                        {new Date(item.bitisTarihi).toLocaleDateString('tr-TR')}
                       </td>
                       <td className='px-3 py-2 text-xs text-gray-500'>
-                        {info.adres?.mahalleCaddeSokak || '-'}
+                        {item.adres || '-'}
                       </td>
                       <td className='px-3 py-2 text-xs text-gray-500'>
-                        {info.adres?.il || '-'}
+                        {item.il || '-'}
                       </td>
                       <td className='px-3 py-2 text-xs text-gray-500'>
-                        {info.adres?.ilce || '-'}
+                        {item.ilce || '-'}
                       </td>
                       <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
-                        {info.iptalTarihi ? (
-                          new Date(info.iptalTarihi).toLocaleDateString('tr-TR')
+                        {item.iptalSonaErdirmeTarihi ? (
+                          new Date(item.iptalSonaErdirmeTarihi).toLocaleDateString('tr-TR')
                         ) : (
                           <span className='text-gray-400'>-</span>
                         )}
