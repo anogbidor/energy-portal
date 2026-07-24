@@ -1,5 +1,4 @@
 // src/components/ExchangeRates.tsx
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid'
 import { useLiveData } from '../hooks/useLiveData'
 
 export default function ExchangeRates() {
@@ -8,12 +7,11 @@ export default function ExchangeRates() {
   if (loading)
     return (
       <div className='animate-pulse space-y-4'>
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
-          {[...Array(4)].map((_, i) => (
+        <div className='grid grid-cols-3 gap-3'>
+          {[...Array(3)].map((_, i) => (
             <div key={i} className='space-y-3'>
               <div className='h-4 w-3/4 bg-gray-200 rounded'></div>
               <div className='h-6 w-full bg-gray-200 rounded'></div>
-              <div className='h-4 w-1/2 bg-gray-200 rounded'></div>
             </div>
           ))}
         </div>
@@ -60,47 +58,14 @@ export default function ExchangeRates() {
       </div>
     )
 
-  // Default change values since they're not in the LiveData type
-  const defaultChangeValues = {
-    usdTryChange: 0.3,
-    eurTryChange: 0.5,
-    gbpTryChange: -0.2,
-    goldPriceChange: 1.8,
-  }
-
   const rates = [
-    {
-      name: 'USD/TRY',
-      symbol: '$',
-      value: data.usdTry,
-      change: defaultChangeValues.usdTryChange,
-      targetSymbol: '₺',
-    },
-    {
-      name: 'EUR/TRY',
-      symbol: '€',
-      value: data.eurTry,
-      change: defaultChangeValues.eurTryChange,
-      targetSymbol: '₺',
-    },
-    {
-      name: 'GBP/TRY',
-      symbol: '£',
-      value: data.gbpTry,
-      change: defaultChangeValues.gbpTryChange,
-      targetSymbol: '₺',
-    },
-    {
-      name: 'Brent Petrol',
-      symbol: '🛢️',
-      value: data.brent,
-      change: 0, // No change data available for brent
-      targetSymbol: '$',
-    },
+    { name: 'USD/TRY', symbol: '$', value: data.usdTry },
+    { name: 'EUR/TRY', symbol: '€', value: data.eurTry },
+    { name: 'GBP/TRY', symbol: '£', value: data.gbpTry },
   ]
 
   return (
-    <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+    <div className='grid grid-cols-3 gap-3'>
       {rates.map((rate) => (
         <div
           key={rate.name}
@@ -111,38 +76,13 @@ export default function ExchangeRates() {
             <p className='text-lg font-semibold text-gray-900 mt-1'>
               {rate.value !== null ? (
                 <>
-                  {rate.symbol}{' '}
-                  {rate.value.toFixed(
-                    ['USD/TRY', 'EUR/TRY', 'GBP/TRY'].includes(rate.name)
-                      ? 2
-                      : rate.name.includes('Petrol')
-                      ? 2
-                      : 4
-                  )}
-                  <span className='text-sm font-normal ml-1'>
-                    {rate.targetSymbol}
-                  </span>
+                  {rate.symbol} {rate.value.toFixed(2)}
+                  <span className='text-sm font-normal ml-1'>₺</span>
                 </>
               ) : (
                 '-'
               )}
             </p>
-            {rate.change !== 0 && (
-              <div
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-small mt-1 ${
-                  rate.change >= 0
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {rate.change >= 0 ? (
-                  <ArrowUpIcon className='mr-1 h-3 w-3 text-green-800' />
-                ) : (
-                  <ArrowDownIcon className='mr-1 h-3 w-3 text-red-800' />
-                )}
-                {Math.abs(rate.change)}%
-              </div>
-            )}
           </div>
         </div>
       ))}

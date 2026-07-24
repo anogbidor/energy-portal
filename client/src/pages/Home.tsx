@@ -4,13 +4,13 @@ import {
   ArrowRightIcon,
   CurrencyDollarIcon,
   NewspaperIcon,
-  BoltIcon,
-  ChartBarIcon,
+  FireIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
 import Hero from '../components/Hero'
 import { useNewsFeed } from '../hooks/useNewsFeed'
+import { useLiveData } from '../hooks/useLiveData'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import Sidebar from '../components/SideBar'
@@ -19,8 +19,12 @@ import { useState, useEffect } from 'react'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
+  const { data: liveData } = useLiveData()
   const featuredNews = useMemo(() => news?.slice(0, 3) || [], [news])
   const [currentSlide, setCurrentSlide] = useState(0)
+
+  const benzin = liveData?.fuelPrices.find((item) => item.yakit.includes('Benzin'))
+  const motorin = liveData?.fuelPrices.find((item) => item.yakit === 'Motorin')
 
   // Auto-rotate slides
   useEffect(() => {
@@ -176,31 +180,25 @@ export default function Home() {
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12'>
               <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
                 <div className='flex items-center mb-3 sm:mb-4'>
-                  <BoltIcon className='h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mr-2' />
+                  <FireIcon className='h-5 w-5 sm:h-6 sm:w-6 text-red-600 mr-2' />
                   <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    Elektrik Tüketimi
+                    Benzin (95 Oktan)
                   </h3>
                 </div>
                 <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  48,542 MWh
-                </p>
-                <p className='text-xs sm:text-sm text-green-600 mt-1'>
-                  ↑ Dünden 2.4% artış
+                  {benzin ? `₺${benzin.fiyat.toFixed(2)}` : '—'}
                 </p>
               </div>
 
               <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
                 <div className='flex items-center mb-3 sm:mb-4'>
-                  <ChartBarIcon className='h-5 w-5 sm:h-6 sm:w-6 text-green-600 mr-2' />
+                  <FireIcon className='h-5 w-5 sm:h-6 sm:w-6 text-orange-600 mr-2' />
                   <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    Yenilenebilir Enerji
+                    Motorin
                   </h3>
                 </div>
                 <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  34.2%
-                </p>
-                <p className='text-xs sm:text-sm text-green-600 mt-1'>
-                  ↑ Geçen aydan %1,8 artış
+                  {motorin ? `₺${motorin.fiyat.toFixed(2)}` : '—'}
                 </p>
               </div>
 
@@ -208,36 +206,12 @@ export default function Home() {
                 <div className='flex items-center mb-3 sm:mb-4'>
                   <CurrencyDollarIcon className='h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 mr-2' />
                   <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    Petrol Fiyatı
+                    USD/TRY
                   </h3>
                 </div>
                 <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  ₺28.45
+                  {liveData?.usdTry ? `₺${liveData.usdTry.toFixed(2)}` : '—'}
                 </p>
-                <p className='text-xs sm:text-sm text-red-600 mt-1'>
-                  ↓ Dünden %0,8 azalış
-                </p>
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className='bg-[#1fa637] rounded-xl p-6 sm:p-8 text-white shadow-lg'>
-              <div className='max-w-2xl mx-auto text-center'>
-                <h3 className='text-xl sm:text-2xl font-bold mb-3 sm:mb-4'>
-                  Enerji Analizlerine Erişin
-                </h3>
-                <p className='mb-4 sm:mb-6 text-blue-100 text-sm sm:text-base'>
-                  Premium üyelik ile detaylı raporlara, tarihsel verilere ve
-                  özel analizlere erişebilirsiniz.
-                </p>
-                <Link
-                  to='/premium'
-                  className='inline-flex items-center justify-center bg-white hover:bg-gray-100 text-blue-900 font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg text-sm sm:text-base'
-                  aria-label='Premium üyelik sayfasına git'
-                >
-                  Premium Üye Ol
-                  <ArrowRightIcon className='h-4 w-4 sm:h-5 sm:w-5 ml-2' />
-                </Link>
               </div>
             </div>
           </div>
