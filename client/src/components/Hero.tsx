@@ -1,8 +1,4 @@
-import {
-  ArrowUpIcon,
-  ArrowDownIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/20/solid'
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { useEffect, useRef, useState } from 'react'
 import { useLiveData } from '../hooks/useLiveData'
 import LoadingSpinner from './LoadingSpinner'
@@ -87,35 +83,14 @@ export default function Hero() {
       </div>
     )
 
+  const benzin = data.fuelPrices.find((item) => item.yakit.includes('Benzin'))
+  const otogaz = data.lpgPrices.find((item) => item.yakit === 'Otogaz')
+
   const tickerItems = [
-    {
-      name: 'Benzin',
-      price: data.fuelPrices.istanbul.benzin,
-      change: 2.3,
-      unit: '₺/L',
-      icon: '⛽',
-    },
-    {
-      name: 'LPG',
-      price: data.fuelPrices.istanbul.lpg,
-      change: -0.8,
-      unit: '₺/L',
-      icon: '🔥',
-    },
-    {
-      name: 'Elektrik',
-      price: 3.12,
-      change: 0.3,
-      unit: '₺/kWh',
-      icon: '⚡',
-    },
-    {
-      name: 'Doğal Gaz',
-      price: 5.87,
-      change: 1.2,
-      unit: '₺/m³',
-      icon: '⛽',
-    },
+    { name: 'Benzin (95 Oktan)', price: benzin?.fiyat ?? null, unit: '₺/L', icon: '⛽' },
+    { name: 'Otogaz (LPG)', price: otogaz?.fiyat ?? null, unit: '₺/L', icon: '🔥' },
+    { name: 'USD/TRY', price: data.usdTry, unit: '₺', icon: '💵' },
+    { name: 'EUR/TRY', price: data.eurTry, unit: '₺', icon: '💶' },
   ]
 
   const duplicatedItems = [...tickerItems, ...tickerItems]
@@ -166,20 +141,6 @@ export default function Hero() {
                   <span className='mr-2'>{item.icon}</span>
                   {item.name}
                 </div>
-                <div
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                    item.change >= 0
-                      ? 'bg-green-900/30 text-green-300'
-                      : 'bg-red-900/30 text-red-300'
-                  }`}
-                >
-                  {item.change >= 0 ? (
-                    <ArrowUpIcon className='-ml-0.5 mr-0.5 h-3 w-3' />
-                  ) : (
-                    <ArrowDownIcon className='-ml-0.5 mr-0.5 h-3 w-3' />
-                  )}
-                  {Math.abs(item.change)}%
-                </div>
               </div>
               <div className='mt-2 text-2xl font-bold tracking-tight'>
                 {typeof item.price === 'number'
@@ -229,18 +190,6 @@ export default function Hero() {
                         ? `${item.price.toFixed(2)}`
                         : '—'}
                       <span className='text-white/60 ml-0.5'>{item.unit}</span>
-                    </span>
-                    <span
-                      className={`inline-flex items-center text-sm font-semibold ${
-                        item.change >= 0 ? 'text-green-300' : 'text-red-300'
-                      }`}
-                    >
-                      {item.change >= 0 ? (
-                        <ArrowUpIcon className='h-3.5 w-3.5 mr-0.5' />
-                      ) : (
-                        <ArrowDownIcon className='h-3.5 w-3.5 mr-0.5' />
-                      )}
-                      {Math.abs(item.change)}%
                     </span>
                   </div>
                 ))}

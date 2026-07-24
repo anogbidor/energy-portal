@@ -1,0 +1,42 @@
+name: Ingest EPDK Bayilik (station/dealer) data
+
+on:
+  schedule:
+    # Twice daily -- much heavier than the distributor job (up to ~93
+    # sequential per-distributor EPDK calls across both markets combined),
+    # so run less often and call each market as a separate request so
+    # neither invocation risks Vercel's function duration ceiling.
+    - cron: '0 2,14 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ingest-petrol:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger petrol Bayilik ingestion
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 300 \
+            -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=petrol" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 400 ]; then
+            echo "Petrol Bayilik ingestion failed"
+            exit 1
+          fi
+
+  ingest-lpg:
+    runs-on: ubuntu-latest
+    needs: ingest-petrol
+    steps:
+      - name: Trigger lpg Bayilik ingestion
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 300 \
+            -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=lpg" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 400 ]; then
+            echo "LPG Bayilik ingestion failed"
+            exit 1
+          fi

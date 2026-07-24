@@ -1,11 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import path from 'path'
-import { promises as fs } from 'fs'
+import { applyCors } from '@/lib/cors'
+import { queryEpdkGateway } from '@/lib/epdkGateway'
 
-type FuelPrice = {
-  benzin: number
-  motorin: number
-  lpg: number
+type FuelPriceItem = {
+  yakit: string
+  fiyat: number
+  olcuBirimi: string
+  tarih: string
 }
 
 type Data = {
@@ -13,25 +14,69 @@ type Data = {
   usdTry: number | null
   eurTry: number | null
   gbpTry: number | null
-  fuelPrices: Record<string, FuelPrice>
+  fuelPrices: FuelPriceItem[]
+  lpgPrices: FuelPriceItem[]
 }
 
-// In-memory cache
-let lastFetched: number | null = null
+const CACHE_TTL = 1000 * 60 * 60 // 1 hour -- these are daily bulletins,
+// no need to hit EPDK's rate-limit-sensitive gateway on every page view.
+
 let cachedExchangeData: {
   usdTry: number | null
   eurTry: number | null
   gbpTry: number | null
   brent: number | null
 } | null = null
+let lastExchangeFetch = 0
+
+let cachedBulletins: { fuelPrices: FuelPriceItem[]; lpgPrices: FuelPriceItem[] } | null =
+  null
+let lastBulletinFetch = 0
+
+function formatDateForEpdk(date: Date): string {
+  const dd = String(date.getDate()).padStart(2, '0')
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  return `${dd}.${mm}.${date.getFullYear()}`
+}
+
+interface BulletinResponse {
+  statusCode: number
+  data: { Tarih: string; Yakıt: string; 'Ölçü Birimi': string; Fiyat: number }[]
+}
+
+// The bulletin requires an exact raporTarihi and returns nothing useful for
+// a date it hasn't published yet, so today is tried first and yesterday
+// as a fallback in case today's bulletin isn't out yet.
+async function fetchBulletin(serviceName: string): Promise<FuelPriceItem[]> {
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  for (const date of [today, yesterday]) {
+    try {
+      const result = await queryEpdkGateway<BulletinResponse>(serviceName, {
+        raporTarihi: formatDateForEpdk(date),
+      })
+      if (result?.data?.length) {
+        return result.data.map((row) => ({
+          yakit: row['Yakıt'],
+          fiyat: row.Fiyat,
+          olcuBirimi: row['Ölçü Birimi'],
+          tarih: row['Tarih'],
+        }))
+      }
+    } catch {
+      // try the earlier date
+    }
+  }
+  return []
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data | { error: string }>
 ) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  applyCors(req, res)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -41,21 +86,16 @@ export default async function handler(
     let usdTry: number | null = null
     let eurTry: number | null = null
     let gbpTry: number | null = null
-    let brent: number | null = 83.42 // 🟡 Hardcoded placeholder for Brent
+    let brent: number | null = 83.42 // Hardcoded placeholder -- no live Brent source wired up yet
 
     const now = Date.now()
-    const shouldFetch =
-      !cachedExchangeData || !lastFetched || now - lastFetched > 86400000
 
-    if (shouldFetch) {
+    if (!cachedExchangeData || now - lastExchangeFetch > CACHE_TTL) {
       const apiKey = process.env.EXCHANGE_API_KEY
-      console.log('✅ EXCHANGE_API_KEY:', apiKey)
-
       const exchangeRes = await fetch(
         `https://api.exchangerate.host/live?access_key=${apiKey}`
       )
       const exchangeData = await exchangeRes.json()
-      console.log('exchangeData', exchangeData)
 
       const USDTRY = exchangeData?.quotes?.USDTRY ?? null
       const USDEUR = exchangeData?.quotes?.USDEUR ?? null
@@ -65,50 +105,31 @@ export default async function handler(
       eurTry = USDTRY && USDEUR ? USDTRY / USDEUR : null
       gbpTry = USDTRY && USDGBP ? USDTRY / USDGBP : null
 
-      // ❌ Commented out until plan upgraded
-      /*
-      try {
-        const marketstackKey = process.env.MARKETSTACK_API_KEY
-        const brentRes = await fetch(
-          `http://api.marketstack.com/v1/eod?access_key=${marketstackKey}&symbols=BCOMCO.INDX&limit=1`
-        )
-        const brentData = await brentRes.json()
-        console.log('brentData', brentData)
-        brent = brentData?.data?.[0]?.close ?? brent
-      } catch (brentErr) {
-        console.error('❌ Failed to fetch Brent price:', brentErr)
-      }
-      */
-
       cachedExchangeData = { usdTry, eurTry, gbpTry, brent }
-      lastFetched = now
+      lastExchangeFetch = now
     } else {
-      ;({ usdTry, eurTry, gbpTry, brent } = cachedExchangeData ?? {
-        usdTry: null,
-        eurTry: null,
-        gbpTry: null,
-        brent: 83.42,
-      })
+      ;({ usdTry, eurTry, gbpTry, brent } = cachedExchangeData)
     }
 
-    const fuelPricesPath = path.join(
-      process.cwd(),
-      'src',
-      'data',
-      'fuelPrices.json'
-    )
-    const fuelPricesRaw = await fs.readFile(fuelPricesPath, 'utf-8')
-    const fuelPrices: Record<string, FuelPrice> = JSON.parse(fuelPricesRaw)
+    if (!cachedBulletins || now - lastBulletinFetch > CACHE_TTL) {
+      const [fuelPrices, lpgPrices] = await Promise.all([
+        fetchBulletin('petrolBayiSatisFiyatBulten'),
+        fetchBulletin('lpgBayiSatisFiyatBultenGunluk'),
+      ])
+      cachedBulletins = { fuelPrices, lpgPrices }
+      lastBulletinFetch = now
+    }
 
     res.status(200).json({
       brent,
       usdTry,
       eurTry,
       gbpTry,
-      fuelPrices,
+      fuelPrices: cachedBulletins.fuelPrices,
+      lpgPrices: cachedBulletins.lpgPrices,
     })
   } catch (err) {
-    console.error('❌ Error in /api/live-data:', err)
+    console.error('Error in /api/live-data:', err)
     res.status(500).json({ error: 'Failed to fetch live data' })
   }
 }

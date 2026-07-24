@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-
-export type FuelPrice = {
-  benzin: number
-  motorin: number
-  lpg: number
+export type FuelPriceItem = {
+  yakit: string
+  fiyat: number
+  olcuBirimi: string
+  tarih: string
 }
 
 export type LiveData = {
@@ -12,12 +12,12 @@ export type LiveData = {
   usdTry: number | null
   eurTry: number | null
   gbpTry: number | null
-  fuelPrices: Record<string, FuelPrice>
+  fuelPrices: FuelPriceItem[]
+  lpgPrices: FuelPriceItem[]
 }
 
 export function useLiveData() {
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
   const [data, setData] = useState<LiveData | null>(null)
   const [loading, setLoading] = useState(true)

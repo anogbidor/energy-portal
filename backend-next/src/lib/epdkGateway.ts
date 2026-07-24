@@ -68,6 +68,35 @@ export function queryEpdkGateway<T = unknown>(
   })
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// EPDK's gateway throttles far more aggressively than its own error
+// message ("reaching Throttling limit") suggests -- confirmed in practice
+// where even two calls a few seconds apart triggered a 429. Any call site
+// making more than an occasional single request should go through this
+// rather than queryEpdkGateway directly.
+export async function queryEpdkGatewayWithRetry<T = unknown>(
+  serviceName: string,
+  body: Record<string, unknown>,
+  maxRetries = 4
+): Promise<T> {
+  let lastError: unknown
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await queryEpdkGateway<T>(serviceName, body)
+    } catch (error) {
+      lastError = error
+      const isThrottled =
+        error instanceof EpdkGatewayError && error.statusCode === 429
+      if (!isThrottled || attempt === maxRetries) throw error
+      await sleep(2000 * 2 ** attempt) // 2s, 4s, 8s, 16s
+    }
+  }
+  throw lastError
+}
+
 // Verified against the gateway's own validation error (it rejects an
 // invalid lisansDurumu with a 400 that lists the accepted values) --
 // this is the same set for every market's dagitici/bayilik endpoint.
