@@ -104,22 +104,36 @@ type MappedRecord = ReturnType<typeof mapRecord>
 export async function ingestLicenses(
   market: string,
   licenseType: string,
-  records: EpdkLicenseRecord[]
+  records: EpdkLicenseRecord[],
+  // Bayilik ingestion processes a handful of distributors per invocation
+  // (see ingestBayilik.ts) rather than the whole market in one run, so "has
+  // any run for this (market, licenseType) ever succeeded" isn't the right
+  // isFirstRun signal there -- the caller determines it instead (based on
+  // whether any distributor still hasn't been checked yet) and passes it
+  // in. Left undefined, this falls back to the ingestion_runs-based check,
+  // which is correct for the distributor endpoints where one run really is
+  // the whole market.
+  forceIsFirstRun?: boolean
 ): Promise<IngestResult> {
   const supabase = getSupabaseAdmin()
 
-  const { count: priorSuccessCount } = await supabase
-    .from('ingestion_runs')
-    .select('id', { count: 'exact', head: true })
-    .eq('market', market)
-    .eq('license_type', licenseType)
-    .eq('status', 'success')
+  let isFirstRun: boolean
+  if (forceIsFirstRun !== undefined) {
+    isFirstRun = forceIsFirstRun
+  } else {
+    const { count: priorSuccessCount } = await supabase
+      .from('ingestion_runs')
+      .select('id', { count: 'exact', head: true })
+      .eq('market', market)
+      .eq('license_type', licenseType)
+      .eq('status', 'success')
 
-  // On the very first ingestion for a (market, licenseType), every record
-  // is "new" to us but not actually news -- don't flood license_events
-  // with hundreds of synthetic "issued" rows for licenses that have
-  // existed for years. Diffing starts meaning something from run 2 on.
-  const isFirstRun = !priorSuccessCount
+    // On the very first ingestion for a (market, licenseType), every record
+    // is "new" to us but not actually news -- don't flood license_events
+    // with hundreds of synthetic "issued" rows for licenses that have
+    // existed for years. Diffing starts meaning something from run 2 on.
+    isFirstRun = !priorSuccessCount
+  }
 
   const { data: existingRows } = await supabase
     .from('licenses')

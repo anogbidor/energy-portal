@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { runBayilikIngestion } from '@/lib/ingestBayilik'
 
-// Scoped to one market per invocation (see ingestBayilik.ts) to stay
-// comfortably under Vercel Hobby's 300s function ceiling even with retries.
+// Each invocation only processes a small batch of distributors (see
+// ingestBayilik.ts), so this is comfortably under Vercel Hobby's 300s
+// ceiling; 290s is just a safety cap, not an expected duration.
 export const config = {
   maxDuration: 290,
 }

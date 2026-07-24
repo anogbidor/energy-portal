@@ -2,26 +2,28 @@ name: Ingest EPDK Bayilik (station/dealer) data
 
 on:
   schedule:
-    # Twice daily -- much heavier than the distributor job (up to ~93
-    # sequential per-distributor EPDK calls across both markets combined),
-    # so run less often and call each market as a separate request so
-    # neither invocation risks Vercel's function duration ceiling.
-    - cron: '0 2,14 * * *'
+    # Every 5 minutes (GitHub's minimum supported granularity). Each tick
+    # only processes a small batch of distributors per market (see
+    # ingestBayilik.ts) -- EPDK's sustained rate limit turned out to be
+    # much stricter than a single burst-protection window, so this cycles
+    # through the full distributor list gradually (roughly an hour or two
+    # for a full pass) instead of trying to do it all in one run.
+    - cron: '*/5 * * * *'
   workflow_dispatch: {}
 
 jobs:
   ingest-petrol:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger petrol Bayilik ingestion
+      - name: Trigger petrol Bayilik batch
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 300 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 120 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=petrol" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
           cat /tmp/response.json
           if [ "$status" -ge 400 ]; then
-            echo "Petrol Bayilik ingestion failed"
+            echo "Petrol Bayilik batch failed"
             exit 1
           fi
 
@@ -29,14 +31,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: ingest-petrol
     steps:
-      - name: Trigger lpg Bayilik ingestion
+      - name: Trigger lpg Bayilik batch
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 300 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 120 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=lpg" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
           cat /tmp/response.json
           if [ "$status" -ge 400 ]; then
-            echo "LPG Bayilik ingestion failed"
+            echo "LPG Bayilik batch failed"
             exit 1
           fi
