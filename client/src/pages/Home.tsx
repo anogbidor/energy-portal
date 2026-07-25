@@ -1,30 +1,22 @@
 import { Link } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   ArrowRightIcon,
-  CurrencyDollarIcon,
   NewspaperIcon,
-  FireIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline'
 import Hero from '../components/Hero'
 import { useNewsFeed } from '../hooks/useNewsFeed'
-import { useLiveData } from '../hooks/useLiveData'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import Sidebar from '../components/SideBar'
 import MarketsSideBar from '../components/MarketsSideBar'
-import { useState, useEffect } from 'react'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
-  const { data: liveData } = useLiveData()
   const featuredNews = useMemo(() => news?.slice(0, 3) || [], [news])
   const [currentSlide, setCurrentSlide] = useState(0)
-
-  const benzin = liveData?.fuelPrices.find((item) => item.yakit.includes('Benzin'))
-  const motorin = liveData?.fuelPrices.find((item) => item.yakit === 'Motorin')
 
   // Auto-rotate slides
   useEffect(() => {
@@ -50,8 +42,8 @@ export default function Home() {
     <div className='bg-gray-50 min-h-screen'>
       <Hero />
 
-      <section className='py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto'>
-        <div className='flex flex-col lg:flex-row gap-8'>
+      <section className='py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto'>
+        <div className='flex flex-col lg:flex-row gap-6'>
           {/* Left Sidebar - Piyasalar - Hidden on mobile */}
           <div className='hidden lg:block lg:w-72 flex-shrink-0 order-first'>
             <MarketsSideBar />
@@ -60,15 +52,15 @@ export default function Home() {
           {/* Main content area */}
           <div className='flex-1 w-full'>
             {/* News Section */}
-            <div className='mb-12 bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100'>
+            <div className='bg-white rounded-xl p-4 sm:p-6 border border-gray-200'>
               <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4'>
-                <h2 className='text-xl sm:text-2xl font-bold text-gray-800 flex items-center'>
-                  <NewspaperIcon className='h-5 w-5 sm:h-6 sm:w-6 text-red-500 mr-2' />
+                <h2 className='text-lg font-semibold text-gray-900 flex items-center'>
+                  <NewspaperIcon className='h-5 w-5 text-gray-400 mr-2' />
                   Son Enerji Haberleri
                 </h2>
                 <Link
                   to='/news'
-                  className='text-green-600 hover:text-blue-800 text-sm font-medium flex items-center transition-colors'
+                  className='text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center transition-colors'
                   aria-label='Tüm haberleri görüntüle'
                 >
                   Tüm Haberler <ArrowRightIcon className='h-4 w-4 ml-1' />
@@ -78,7 +70,7 @@ export default function Home() {
               {loading ? (
                 <div className='flex flex-col items-center py-12'>
                   <LoadingSpinner />
-                  <div className='text-black text-lg mt-2'>
+                  <div className='text-gray-500 text-sm mt-2'>
                     Veriler yükleniyor
                   </div>
                 </div>
@@ -106,13 +98,13 @@ export default function Home() {
                           <div className='bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200'>
                             <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
                               <span className='text-xs font-semibold text-gray-500'>
-                                {item.category || 'GENEL'} - ÖNE ÇIKAN
+                                {item.category || 'GENEL'}
                               </span>
                               <span className='text-xs text-gray-500'>
                                 {item.date}
                               </span>
                             </div>
-                            <h3 className='text-lg sm:text-xl font-bold text-gray-800 mb-3'>
+                            <h3 className='text-lg sm:text-xl font-bold text-gray-900 mb-3'>
                               {item.title}
                             </h3>
                             <p className='text-gray-600 mb-4 line-clamp-2'>
@@ -120,7 +112,7 @@ export default function Home() {
                             </p>
                             <Link
                               to={item.link}
-                              className='text-green-600 hover:text-green-700 text-sm font-medium flex items-center'
+                              className='text-gray-900 hover:text-gray-600 text-sm font-medium flex items-center'
                             >
                               Haberin Devamı
                               <ArrowRightIcon className='h-4 w-4 ml-1' />
@@ -162,10 +154,10 @@ export default function Home() {
                         <button
                           key={index}
                           onClick={() => setCurrentSlide(index)}
-                          className={`h-2 w-6 sm:w-8 rounded-full transition-all ${
+                          className={`h-1.5 rounded-full transition-all ${
                             currentSlide === index
-                              ? 'bg-green-600'
-                              : 'bg-gray-300'
+                              ? 'w-6 bg-gray-900'
+                              : 'w-1.5 bg-gray-300'
                           }`}
                           aria-label={`${index + 1}. habere git`}
                         />
@@ -174,45 +166,6 @@ export default function Home() {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Quick Stats Section */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12'>
-              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-3 sm:mb-4'>
-                  <FireIcon className='h-5 w-5 sm:h-6 sm:w-6 text-red-600 mr-2' />
-                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    Benzin (95 Oktan)
-                  </h3>
-                </div>
-                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  {benzin ? `₺${benzin.fiyat.toFixed(2)}` : '—'}
-                </p>
-              </div>
-
-              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-3 sm:mb-4'>
-                  <FireIcon className='h-5 w-5 sm:h-6 sm:w-6 text-orange-600 mr-2' />
-                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    Motorin
-                  </h3>
-                </div>
-                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  {motorin ? `₺${motorin.fiyat.toFixed(2)}` : '—'}
-                </p>
-              </div>
-
-              <div className='bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
-                <div className='flex items-center mb-3 sm:mb-4'>
-                  <CurrencyDollarIcon className='h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 mr-2' />
-                  <h3 className='text-base sm:text-lg font-semibold text-gray-800'>
-                    USD/TRY
-                  </h3>
-                </div>
-                <p className='text-xl sm:text-2xl font-bold text-gray-900'>
-                  {liveData?.usdTry ? `₺${liveData.usdTry.toFixed(2)}` : '—'}
-                </p>
-              </div>
             </div>
           </div>
 
