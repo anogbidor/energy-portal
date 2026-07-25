@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { applyCors } from '@/lib/cors'
 const mockData = [
   {
     id: '1',
@@ -91,10 +92,7 @@ const mockData = [
 ]
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Allow CORS from localhost:5173 (your frontend origin)
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  applyCors(req, res)
 
   // Handle OPTIONS method for preflight request
   if (req.method === 'OPTIONS') {

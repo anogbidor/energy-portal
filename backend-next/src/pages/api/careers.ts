@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { applyCors } from '@/lib/cors'
 
 const mockJobs = [
   {
@@ -51,10 +52,7 @@ const mockJobs = [
 ]
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Add CORS headers if needed (like in your real-estate API)
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  applyCors(req, res)
   if (req.method === 'OPTIONS') {
     res.status(200).end()
     return

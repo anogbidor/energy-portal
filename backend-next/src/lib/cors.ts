@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
+  'https://energy-portal-six.vercel.app',
+  'https://energy-portal-stage1.vercel.app',
   'https://energy-portal-stage.vercel.app',
 ]
 
