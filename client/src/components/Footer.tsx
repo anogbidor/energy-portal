@@ -5,8 +5,6 @@ const links = [
   { path: '/prices', name: 'Fiyatlar' },
   { path: '/stations', name: 'İstasyonlar' },
   { path: '/license', name: 'Lisanslar' },
-  { path: '/careers', name: 'İlanlar' },
-  { path: '/real-estate', name: 'Emlak' },
 ]
 
 export default function Footer() {

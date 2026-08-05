@@ -6,8 +6,6 @@ import {
   CurrencyDollarIcon,
   MapPinIcon,
   DocumentChartBarIcon,
-  BriefcaseIcon,
-  BuildingOfficeIcon,
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
@@ -19,8 +17,6 @@ const navItems = [
   { path: '/prices', name: 'Fiyatlar', icon: CurrencyDollarIcon },
   { path: '/stations', name: 'İstasyonlar', icon: MapPinIcon },
   { path: '/license', name: 'Lisanslar', icon: DocumentChartBarIcon },
-  { path: '/careers', name: 'İlanlar', icon: BriefcaseIcon },
-  { path: '/real-estate', name: 'Emlak', icon: BuildingOfficeIcon },
 ]
 
 export default function Navbar() {
