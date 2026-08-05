@@ -52,7 +52,7 @@ export default function LicenseTable({
   return (
     <>
       {/* Table container */}
-      <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg'>
+      <div className='overflow-hidden border border-gray-200 rounded-lg'>
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-300'>
             <thead className='bg-gray-50'>
@@ -208,7 +208,7 @@ export default function LicenseTable({
                     onClick={() => goToPage(pageNum)}
                     className={`relative inline-flex items-center px-3 py-1 border text-xs font-medium ${
                       currentPage === pageNum
-                        ? 'z-10 bg-green-50 border-green-500 text-green-900'
+                        ? 'z-10 bg-gray-900 border-gray-900 text-white'
                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                     }`}
                   >

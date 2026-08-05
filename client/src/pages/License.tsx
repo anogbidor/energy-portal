@@ -143,18 +143,19 @@ export default function LicensesPage() {
   }
 
   return (
-    <main className='bg-white p-5 font-sans max-w-auto mx-auto'>
-      <header className='mb-6'>
-        <h1 className='text-2xl text-center font-bold text-green-900'>
+    <main className='bg-gray-50 min-h-screen'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 py-10'>
+      <header className='mb-8 text-center'>
+        <h1 className='text-2xl font-semibold text-gray-900'>
           Lisans Sorgulama
         </h1>
-        <p className='text-green-900 mt-1 text-center'>
+        <p className='text-gray-500 mt-1 text-sm'>
           Enerji Piyasası Düzenleme Kurumu lisans bilgileri
         </p>
       </header>
 
       <nav className='mb-8'>
-        <div className='flex justify-center space-x-1 bg-gray-100/50 p-1 rounded-full max-w-md mx-auto'>
+        <div className='flex justify-center gap-1 bg-white border border-gray-200 p-1 rounded-full max-w-md mx-auto'>
           {MARKET_TYPES.map((market) => {
             const isSelected = activeMarket === market
             return (
@@ -166,8 +167,8 @@ export default function LicensesPage() {
             transition-all duration-200
             ${
               isSelected
-                ? 'bg-white text-gray-900 shadow-sm font-semibold'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-600 hover:text-gray-900'
             }
             whitespace-nowrap
           `}
@@ -212,7 +213,7 @@ export default function LicensesPage() {
                 </div>
                 <input
                   type='text'
-                  className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                  className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 sm:text-sm'
                   placeholder='Arama...'
                   value={searchTerm}
                   onChange={handleSearchChange}
@@ -236,7 +237,7 @@ export default function LicensesPage() {
             />
           </>
         ) : (
-          <div className='text-center py-12 bg-gray-50 rounded-lg'>
+          <div className='text-center py-12 bg-white border border-gray-200 rounded-lg'>
             <svg
               className='mx-auto h-12 w-12 text-gray-400'
               fill='none'
@@ -259,6 +260,7 @@ export default function LicensesPage() {
           </div>
         )}
       </section>
+      </div>
     </main>
   )
 }
