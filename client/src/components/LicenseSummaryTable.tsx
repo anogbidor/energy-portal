@@ -52,7 +52,7 @@ export default function LicenseSummaryTable() {
         </p>
         <div className='flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[10px] text-gray-500'>
           <span className='inline-flex items-center gap-1'>
-            <span className='w-1.5 h-1.5 rounded-full bg-green-600' /> Verilen
+            <span className='w-1.5 h-1.5 rounded-full bg-green-600' /> Yürürlükte
           </span>
           {ALL_STATUSES.map((status) => (
             <span key={status} className='inline-flex items-center gap-1'>
@@ -142,7 +142,7 @@ export default function LicenseSummaryTable() {
                               <Link
                                 to={`/license?market=${col.key}&date=${day.date}`}
                                 className={`inline-flex items-center justify-center min-w-[1.5rem] px-1 py-0.5 rounded-full text-[10px] font-medium transition-colors ${ISSUED_PILL_CLASS}`}
-                                title='Verilen lisanslar'
+                                title='Yürürlükteki lisanslar'
                               >
                                 +{activity.issued}
                               </Link>
