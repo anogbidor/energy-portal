@@ -11,13 +11,20 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch: {}
 
+# curl's --max-time below is set just under the API route's own
+# maxDuration (290s, see src/pages/api/cron/ingest-bayilik.ts) --
+# a 5-call batch with jittered 20-28s gaps between calls can take
+# 130-150s+ on its own, so the previous 120s curl timeout was aborting
+# connections (curl exit 28) on batches that were still succeeding
+# server-side, just not being waited for.
+
 jobs:
   ingest-petrol:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger petrol Bayilik batch
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 120 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 280 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=petrol" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
@@ -33,7 +40,7 @@ jobs:
     steps:
       - name: Trigger lpg Bayilik batch
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 120 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 280 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=lpg" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
