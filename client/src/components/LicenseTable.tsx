@@ -1,5 +1,6 @@
 // import React from 'react'
-import type { LicenseItem } from '../hooks/useLicenses'
+import { useNavigate } from 'react-router-dom'
+import type { LicenseItem, Market } from '../hooks/useLicenses'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
@@ -13,6 +14,9 @@ interface LicenseTableProps {
   itemsPerPage: number
   totalItems: number
   onPageChange: (page: number) => void
+  // When provided, rows link through to the license detail view (who's
+  // under this distributor / this dealer's distributor history).
+  market?: Market
 }
 
 export default function LicenseTable({
@@ -24,7 +28,9 @@ export default function LicenseTable({
   itemsPerPage,
   totalItems,
   onPageChange,
+  market,
 }: LicenseTableProps) {
+  const navigate = useNavigate()
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   const getSortIndicator = (key: string) => {
@@ -80,9 +86,19 @@ export default function LicenseTable({
                   return (
                     <tr
                       key={`${item.lisansNo}-${i}`}
+                      onClick={
+                        market
+                          ? () =>
+                              navigate(
+                                `/license/detail?market=${market}&lisansNo=${encodeURIComponent(
+                                  item.lisansNo
+                                )}`
+                              )
+                          : undefined
+                      }
                       className={`hover:bg-gray-50 transition-colors ${
-                        i % 2 === 1 ? 'bg-gray-50/50' : ''
-                      }`}
+                        market ? 'cursor-pointer' : ''
+                      } ${i % 2 === 1 ? 'bg-gray-50/50' : ''}`}
                     >
                       <td className='whitespace-nowrap px-2 py-2 text-xs'>
                         <span

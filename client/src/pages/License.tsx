@@ -1,11 +1,12 @@
 // src/pages/LicensesPage.tsx
 import React from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useLicenses, type Market } from '../hooks/useLicenses' // Import Market type
 import LicenseTable from '../components/LicenseTable'
 import LoadingSpinner from '../components/LoadingSpinner'
 import type { LicenseItem } from '../hooks/useLicenses'
 import { STATUS_LABELS } from '../lib/licenseStatus'
+import { fetchNetworkCount } from '../hooks/useLicenseDetail'
 
 const MARKET_TYPES: Market[] = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 
@@ -102,6 +103,34 @@ export default function LicensesPage() {
   }
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== '')
+
+  // When the Lisans No filter exactly matches a distributor already
+  // loaded in this market's dataset, show how many dealers are under
+  // them as soon as the match happens -- without this, "type a
+  // distributor's number" wouldn't surface their dealer network at all,
+  // since the page only loads dagitici (distributor) records by default
+  // and dealer data lives in a separate, much larger table.
+  const matchedDistributor = React.useMemo(() => {
+    const query = filters.lisansNo.trim()
+    if (!query || !data) return null
+    return data.find((item) => item.lisansNo === query) ?? null
+  }, [filters.lisansNo, data])
+
+  const [networkCount, setNetworkCount] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (!matchedDistributor) {
+      setNetworkCount(null)
+      return
+    }
+    let cancelled = false
+    fetchNetworkCount(activeMarket, matchedDistributor.lisansNo).then((count) => {
+      if (!cancelled) setNetworkCount(count)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [matchedDistributor, activeMarket])
 
   const requestSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc'
@@ -288,7 +317,7 @@ export default function LicensesPage() {
                     <input
                       id={`filter-${field.key}`}
                       type='text'
-                      className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
+                      className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
                       placeholder={field.placeholder}
                       value={filters[field.key]}
                       onChange={(e) =>
@@ -306,7 +335,7 @@ export default function LicensesPage() {
                   </label>
                   <select
                     id='filter-durum'
-                    className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
+                    className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
                     value={filters.durum}
                     onChange={(e) =>
                       handleFilterChange('durum', e.target.value)
@@ -340,6 +369,29 @@ export default function LicensesPage() {
               </div>
             </div>
 
+            {matchedDistributor && (
+              <div className='bg-brand-purple/5 border border-brand-purple/20 rounded-lg p-4 mb-4 flex items-center justify-between flex-wrap gap-3'>
+                <div className='text-sm'>
+                  <span className='font-medium text-gray-900'>
+                    {matchedDistributor.lisansSahibiUnvani}
+                  </span>{' '}
+                  <span className='text-gray-500'>
+                    {networkCount === null
+                      ? '— bayi sayısı yükleniyor...'
+                      : `— bu dağıtıcıya bağlı ${networkCount} bayi bulundu`}
+                  </span>
+                </div>
+                <Link
+                  to={`/license/detail?market=${activeMarket}&lisansNo=${encodeURIComponent(
+                    matchedDistributor.lisansNo
+                  )}`}
+                  className='text-sm font-medium text-brand-purple hover:text-brand-purple-dark whitespace-nowrap'
+                >
+                  Tüm bayileri görüntüle →
+                </Link>
+              </div>
+            )}
+
             <LicenseTable
               data={paginatedData}
               tableHeaders={TABLE_HEADERS}
@@ -349,6 +401,7 @@ export default function LicensesPage() {
               itemsPerPage={ITEMS_PER_PAGE}
               totalItems={sortedData.length}
               onPageChange={goToPage}
+              market={activeMarket}
             />
           </>
         ) : (

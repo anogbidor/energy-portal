@@ -5,6 +5,7 @@ import Home from '../pages/Home'
 import News from '../pages/News'
 import Prices from '../pages/Prices'
 import License from '../pages/License'
+import LicenseDetail from '../pages/LicenseDetail'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 // Stations pulls in @react-google-maps/api, the single largest dependency
@@ -32,6 +33,7 @@ const AppRoutes = () => (
       }
     />
     <Route path='/license' element={<License />} />
+    <Route path='/license/detail' element={<LicenseDetail />} />
   </Routes>
 )
 

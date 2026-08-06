@@ -17,5 +17,7 @@ export function toLicenseApiShape(row: Record<string, unknown>) {
     il: row.il,
     ilce: row.ilce,
     adres: row.adres,
+    dagiticiLisansNo: row.dagitici_lisans_no,
+    dagitimSirketi: row.dagitim_sirketi,
   }
 }

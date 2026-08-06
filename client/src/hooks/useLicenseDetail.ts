@@ -1,0 +1,61 @@
+import { useEffect, useState } from 'react'
+import type { LicenseItem, Market } from './useLicenses'
+
+export interface DistributorTransfer {
+  fromDistributor: string | null
+  toDistributor: string | null
+  effectiveAt: string | null
+}
+
+export interface LicenseDetailData {
+  license: LicenseItem & { licenseType: string; dagitimSirketi?: string | null }
+  network: LicenseItem[] | null
+  networkCount: number | null
+  history: DistributorTransfer[] | null
+}
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
+
+export function useLicenseDetail(market?: Market, lisansNo?: string) {
+  const [data, setData] = useState<LicenseDetailData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!market || !lisansNo) return
+    setLoading(true)
+    setError(null)
+    fetch(
+      `${API_BASE_URL}/api/license-detail?market=${market}&lisansNo=${encodeURIComponent(
+        lisansNo
+      )}`
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (!json.success) throw new Error(json.error || 'API error')
+        setData(json.data)
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Hata'))
+      .finally(() => setLoading(false))
+  }, [market, lisansNo])
+
+  return { data, loading, error }
+}
+
+// Lightweight count-only lookup for the "typing a distributor's license
+// number shows how many dealers are under them" inline hint -- avoids
+// pulling the full (potentially thousands-long) dealer list just to
+// show a number while someone is still typing.
+export async function fetchNetworkCount(
+  market: Market,
+  lisansNo: string
+): Promise<number | null> {
+  const res = await fetch(
+    `${API_BASE_URL}/api/license-detail?market=${market}&lisansNo=${encodeURIComponent(
+      lisansNo
+    )}&countOnly=true`
+  )
+  const json = await res.json()
+  if (!json.success) return null
+  return json.data.networkCount ?? null
+}
