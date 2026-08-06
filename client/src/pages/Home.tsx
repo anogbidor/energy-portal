@@ -10,8 +10,8 @@ import Hero from '../components/Hero'
 import { useNewsFeed } from '../hooks/useNewsFeed'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
-import Sidebar from '../components/SideBar'
 import MarketsSideBar from '../components/MarketsSideBar'
+import LicenseMovementsTable from '../components/LicenseMovementsTable'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
@@ -168,11 +168,11 @@ export default function Home() {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Right Sidebar - Lisans Hareketler - Hidden on mobile */}
-          <div className='hidden lg:block lg:w-72 flex-shrink-0'>
-            <Sidebar />
-          </div>
+        {/* License Movements Table */}
+        <div className='mt-6'>
+          <LicenseMovementsTable />
         </div>
       </section>
     </div>
