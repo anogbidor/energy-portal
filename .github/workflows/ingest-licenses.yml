@@ -1,26 +1,11 @@
 name: Ingest EPDK licenses
 
 on:
-  schedule:
-    # Every 15 minutes. Unlike the Bayilik endpoints (which need small
-    # batches + heavy pacing to survive EPDK's throttle -- see
-    # ingestBayilik.ts), the 4 distributor "give me everything" calls in
-    # a single run have completed clean with real record counts on every
-    # observed run, back-to-back with no artificial delay between them --
-    # this endpoint appears to sit under a much more permissive quota.
-    # 15 min is a large freshness win over the old 6h interval while
-    # staying well under the call volume Bayilik already handles safely
-    # at 5-minute granularity.
-    #
-    # Restricted to EPDK's active hours -- 08:00-20:00 Turkey time
-    # (UTC+3, no DST), i.e. 05:00-17:00 UTC. EPDK doesn't publish
-    # anything overnight, so polling then just burns EPDK's rate-limit
-    # budget and GitHub Actions minutes for zero benefit. Two entries:
-    # ticks every 15 min through the day, plus one exact tick at 17:00
-    # UTC (20:00 TRT) to catch anything right at the cutoff before going
-    # quiet until 05:00 UTC the next morning.
-    - cron: '*/15 5-16 * * *'
-    - cron: '0 17 * * *'
+  # Scheduling now lives on cron-job.org (hits this same endpoint
+  # directly, bypassing GitHub Actions' runner pool -- which repeatedly
+  # left jobs stuck in "queued" for 6+ minutes without starting). Kept
+  # here only as a manual fallback so the two schedulers don't compete
+  # for EPDK's rate-limited calls.
   workflow_dispatch: {}
 
 jobs:
