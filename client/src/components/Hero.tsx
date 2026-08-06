@@ -17,13 +17,13 @@ export default function Hero() {
   const updatedOn = benzin?.tarih
 
   return (
-    <section className='bg-gray-950 text-white'>
+    <section className='bg-brand-gold text-gray-900'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center'>
-        <div className='w-10 h-1 rounded-full bg-brand-gold mx-auto mb-5' />
+        <div className='w-10 h-1 rounded-full bg-brand-purple mx-auto mb-5' />
         <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
           Enerji ve Lisans Piyasaları
         </h1>
-        <p className='mt-4 text-base sm:text-lg text-gray-400 max-w-xl mx-auto'>
+        <p className='mt-4 text-base sm:text-lg text-gray-800 max-w-xl mx-auto'>
           EPDK lisans hareketleri, akaryakıt fiyatları ve döviz kurları — tek
           bir yerde.
         </p>
@@ -33,23 +33,23 @@ export default function Hero() {
             [...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className='animate-pulse bg-white/5 border border-white/10 rounded-xl p-4 h-[76px]'
+                className='animate-pulse bg-white/40 border border-black/10 rounded-xl p-4 h-[76px]'
               />
             ))
           ) : error ? (
-            <div className='col-span-full text-sm text-red-300'>{error}</div>
+            <div className='col-span-full text-sm text-red-800 font-medium'>{error}</div>
           ) : (
             stats.map((stat) => (
               <div
                 key={stat.name}
-                className='bg-white/5 border border-white/10 rounded-xl p-4 text-left'
+                className='bg-white border border-black/5 rounded-xl p-4 text-left shadow-sm'
               >
-                <p className='text-xs text-gray-400'>{stat.name}</p>
-                <p className='mt-1 text-xl font-semibold'>
+                <p className='text-xs text-gray-500'>{stat.name}</p>
+                <p className='mt-1 text-xl font-semibold text-gray-900'>
                   {stat.value !== undefined && stat.value !== null
                     ? stat.value.toFixed(2)
                     : '—'}
-                  <span className='text-sm font-normal text-gray-500 ml-1'>
+                  <span className='text-sm font-normal text-gray-400 ml-1'>
                     {stat.unit}
                   </span>
                 </p>
@@ -59,7 +59,7 @@ export default function Hero() {
         </div>
 
         {updatedOn && (
-          <p className='mt-4 text-xs text-gray-500'>
+          <p className='mt-4 text-xs text-gray-700'>
             EPDK bayi satış fiyatı bülteni · {updatedOn}
           </p>
         )}
