@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { waitUntil } from '@vercel/functions'
 import { snapshotPrices } from '@/lib/snapshotPrices'
 
-export const config = {
-  maxDuration: 60,
-}
-
-// See ingest-bayilik.ts for why this responds immediately -- the two
-// sequential bulletin calls with a paced gap between them (see
-// snapshotPrices.ts) take longer than an external pinger reliably waits.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -17,11 +9,11 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  waitUntil(
-    snapshotPrices().catch((err) => {
-      console.error('Price snapshot failed in background:', err)
-    })
-  )
-
-  return res.status(202).json({ started: true })
+  try {
+    const result = await snapshotPrices()
+    return res.status(200).json({ success: true, ...result })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return res.status(500).json({ success: false, error: message })
+  }
 }

@@ -1,14 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { waitUntil } from '@vercel/functions'
 import { runDistributorIngestion } from '@/lib/ingestLicenses'
 
-export const config = {
-  maxDuration: 120,
-}
-
-// See ingest-bayilik.ts for why this responds immediately instead of
-// waiting for the run to finish -- external cron pingers time out
-// well before a multi-market ingestion run completes.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -20,11 +12,6 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  waitUntil(
-    runDistributorIngestion().catch((err) => {
-      console.error('Distributor ingestion failed in background:', err)
-    })
-  )
-
-  return res.status(202).json({ started: true })
+  const results = await runDistributorIngestion()
+  return res.status(200).json({ results })
 }
