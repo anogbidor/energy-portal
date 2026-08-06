@@ -25,8 +25,12 @@ export default function LicenseDetail() {
   const [searchParams] = useSearchParams()
   const market = searchParams.get('market') as Market | null
   const lisansNo = searchParams.get('lisansNo')
-  const { data, loading, error } = useLicenseDetail(market ?? undefined, lisansNo ?? undefined)
   const [networkPage, setNetworkPage] = useState(1)
+  const { data, loading, error } = useLicenseDetail(
+    market ?? undefined,
+    lisansNo ?? undefined,
+    networkPage
+  )
 
   if (!market || !lisansNo) {
     return (
@@ -130,23 +134,20 @@ export default function LicenseDetail() {
                     Bu dağıtıcı adına kayıtlı bayilik lisansları
                   </p>
                 </div>
-                {data.network.length === 0 ? (
+                {(data.networkCount ?? 0) === 0 ? (
                   <p className='p-6 text-sm text-gray-500'>
                     Bu dağıtıcıya bağlı bayi bulunamadı.
                   </p>
                 ) : (
                   <div className='p-4'>
                     <LicenseTable
-                      data={data.network.slice(
-                        (networkPage - 1) * ITEMS_PER_PAGE,
-                        networkPage * ITEMS_PER_PAGE
-                      )}
+                      data={data.network}
                       tableHeaders={NETWORK_HEADERS}
                       sortConfig={null}
                       onRequestSort={() => {}}
                       currentPage={networkPage}
                       itemsPerPage={ITEMS_PER_PAGE}
-                      totalItems={data.network.length}
+                      totalItems={data.networkCount ?? 0}
                       onPageChange={setNetworkPage}
                       market={market}
                     />

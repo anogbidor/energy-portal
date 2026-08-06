@@ -33,6 +33,10 @@ export default async function handler(
   const lisansNo =
     typeof req.query.lisansNo === 'string' ? req.query.lisansNo : undefined
   const countOnly = req.query.countOnly === 'true'
+  const pageParam =
+    typeof req.query.page === 'string' ? parseInt(req.query.page, 10) : NaN
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1
+  const PAGE_SIZE = 40
 
   if (!market || !lisansNo) {
     return res
@@ -59,21 +63,28 @@ export default async function handler(
     if (licenseRow.license_type === 'dagitici') {
       const distributorName = licenseRow.lisans_sahibi_unvani as string
 
-      if (countOnly) {
-        const { count, error: countError } = await supabase
-          .from('licenses')
-          .select('id', { count: 'exact', head: true })
-          .eq('market', market)
-          .eq('license_type', 'bayilik')
-          .eq('dagitim_sirketi', distributorName)
-        if (countError) throw countError
+      // The real count, from its own head:true query -- PostgREST caps
+      // a row-returning query at 1000 by default (server-side; .limit()
+      // on the client can't override it, confirmed directly against
+      // this project), so a distributor with more dealers than that
+      // (e.g. Petrol Ofisi's real 6,096) needs actual pagination, not
+      // one big fetch.
+      const { count, error: countError } = await supabase
+        .from('licenses')
+        .select('id', { count: 'exact', head: true })
+        .eq('market', market)
+        .eq('license_type', 'bayilik')
+        .eq('dagitim_sirketi', distributorName)
+      if (countError) throw countError
 
+      if (countOnly) {
         return res.status(200).json({
           success: true,
           data: { license, networkCount: count ?? 0, network: null, history: null },
         })
       }
 
+      const from = (page - 1) * PAGE_SIZE
       const { data: bayiRows, error: bayiError } = await supabase
         .from('licenses')
         .select('*')
@@ -81,6 +92,7 @@ export default async function handler(
         .eq('license_type', 'bayilik')
         .eq('dagitim_sirketi', distributorName)
         .order('lisans_sahibi_unvani', { ascending: true })
+        .range(from, from + PAGE_SIZE - 1)
 
       if (bayiError) throw bayiError
 
@@ -88,7 +100,7 @@ export default async function handler(
 
       return res.status(200).json({
         success: true,
-        data: { license, network, networkCount: network.length, history: null },
+        data: { license, network, networkCount: count ?? network.length, history: null },
       })
     }
 

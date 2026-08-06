@@ -16,7 +16,12 @@ export interface LicenseDetailData {
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
-export function useLicenseDetail(market?: Market, lisansNo?: string) {
+// page only matters for a dagitici's dealer network -- the backend caps
+// it at 40 rows per page and returns the real total count separately,
+// since PostgREST won't return more than 1000 rows from one query no
+// matter what's asked for, and a distributor can have several thousand
+// dealers (e.g. Petrol Ofisi has 6,096).
+export function useLicenseDetail(market?: Market, lisansNo?: string, page = 1) {
   const [data, setData] = useState<LicenseDetailData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +33,7 @@ export function useLicenseDetail(market?: Market, lisansNo?: string) {
     fetch(
       `${API_BASE_URL}/api/license-detail?market=${market}&lisansNo=${encodeURIComponent(
         lisansNo
-      )}`
+      )}&page=${page}`
     )
       .then((res) => res.json())
       .then((json) => {
@@ -37,7 +42,7 @@ export function useLicenseDetail(market?: Market, lisansNo?: string) {
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Hata'))
       .finally(() => setLoading(false))
-  }, [market, lisansNo])
+  }, [market, lisansNo, page])
 
   return { data, loading, error }
 }
