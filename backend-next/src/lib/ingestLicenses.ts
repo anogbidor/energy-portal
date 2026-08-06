@@ -14,6 +14,15 @@ export interface EpdkLicenseRecord {
   baslangicTarihi?: string
   bitisTarihi?: string
   iptalSonaErdirmeTarihi?: string
+  // EPDK spells this differently across its own two endpoints -- verified
+  // directly against live responses: the dagitici endpoint sends
+  // "iptalSonaErdimeAciklama" (no "ir"), the bayilik endpoint sends
+  // "iptalSonaErdirmeAciklama" (with "ir"). Both are declared and
+  // mapRecord() below reads whichever is actually present -- reading
+  // only one silently returned undefined for the other endpoint forever
+  // (raw column confirmed real explanations are sent; iptal_aciklama was
+  // null on all 6,378 cancelled petrol bayi before this was caught).
+  iptalSonaErdirmeAciklama?: string | null
   iptalSonaErdimeAciklama?: string | null
   il?: string | null
   ilce?: string | null
@@ -74,7 +83,8 @@ function mapRecord(
     baslangic_tarihi: toDateOrNull(record.baslangicTarihi),
     bitis_tarihi: toDateOrNull(record.bitisTarihi),
     iptal_tarihi: toDateOrNull(record.iptalSonaErdirmeTarihi),
-    iptal_aciklama: record.iptalSonaErdimeAciklama ?? null,
+    iptal_aciklama:
+      record.iptalSonaErdirmeAciklama ?? record.iptalSonaErdimeAciklama ?? null,
     il: record.il ?? null,
     ilce: record.ilce ?? null,
     adres: record.adres ?? record.tesisAdresi ?? null,
