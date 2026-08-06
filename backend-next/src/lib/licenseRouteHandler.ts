@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { applyCors } from './cors'
+import { applyCors, applyPublicCache } from './cors'
 import { getSupabaseAdmin } from './supabaseAdmin'
 import { toLicenseApiShape } from './licenseApiShape'
 
@@ -15,6 +15,7 @@ export function createLicenseRoute(market: string) {
     res: NextApiResponse<Data>
   ) {
     applyCors(req, res)
+    applyPublicCache(res)
 
     if (req.method === 'OPTIONS') {
       return res.status(200).end()

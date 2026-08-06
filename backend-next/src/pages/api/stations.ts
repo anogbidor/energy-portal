@@ -1,6 +1,6 @@
 // backend/src/pages/api/stations.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { applyCors } from '@/lib/cors'
+import { applyCors, applyPublicCache } from '@/lib/cors'
 import { stations } from '../../data/stations'
 
 export default async function handler(
@@ -8,6 +8,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   applyCors(req, res)
+  // This data is static in-code, not a DB/API call -- safe to cache far
+  // longer than the DB-backed routes.
+  applyPublicCache(res, { sMaxAge: 3600, staleWhileRevalidate: 86400 })
 
   if (req.method === 'OPTIONS') {
     res.status(200).end()

@@ -31,32 +31,96 @@ export interface LicenseDetailData {
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
+function cacheKey(market: Market, lisansNo: string, page: number) {
+  return `${market}|${lisansNo}|${page}`
+}
+
+// Module-level cache + in-flight dedup, same pattern as useLicenses --
+// this is also what backs hover-prefetch on table rows (see
+// LicenseTable's onMouseEnter): a hover primes the cache well before a
+// click, so by the time someone actually clicks through the data is
+// often already sitting there instead of showing a spinner.
+const cache = new Map<string, LicenseDetailData>()
+const inFlight = new Map<string, Promise<LicenseDetailData>>()
+
+function fetchDetail(
+  market: Market,
+  lisansNo: string,
+  page: number
+): Promise<LicenseDetailData> {
+  const key = cacheKey(market, lisansNo, page)
+  const existing = inFlight.get(key)
+  if (existing) return existing
+
+  const promise = (async () => {
+    const res = await fetch(
+      `${API_BASE_URL}/api/license-detail?market=${market}&lisansNo=${encodeURIComponent(
+        lisansNo
+      )}&page=${page}`
+    )
+    const json = await res.json()
+    if (!json.success) throw new Error(json.error || 'API error')
+    cache.set(key, json.data)
+    return json.data as LicenseDetailData
+  })()
+
+  inFlight.set(key, promise)
+  return promise.finally(() => inFlight.delete(key))
+}
+
+// Called on row hover in LicenseTable -- fires the fetch early without
+// anyone waiting on it.
+export function prefetchLicenseDetail(market: Market, lisansNo: string) {
+  fetchDetail(market, lisansNo, 1).catch(() => {
+    // Swallowed -- the page's own fetch (with a real error state) runs
+    // if/when it actually mounts.
+  })
+}
+
 // page only matters for a dagitici's dealer network -- the backend caps
 // it at 40 rows per page and returns the real total count separately,
 // since PostgREST won't return more than 1000 rows from one query no
 // matter what's asked for, and a distributor can have several thousand
 // dealers (e.g. Petrol Ofisi has 6,096).
 export function useLicenseDetail(market?: Market, lisansNo?: string, page = 1) {
-  const [data, setData] = useState<LicenseDetailData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const cached =
+    market && lisansNo ? cache.get(cacheKey(market, lisansNo, page)) : undefined
+  const [data, setData] = useState<LicenseDetailData | null>(cached ?? null)
+  const [loading, setLoading] = useState(!cached)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!market || !lisansNo) return
-    setLoading(true)
+    let cancelled = false
+    const key = cacheKey(market, lisansNo, page)
+    const fromCache = cache.get(key)
+
+    if (fromCache) {
+      setData(fromCache)
+      setLoading(false)
+    } else {
+      setLoading(true)
+      setData(null)
+    }
     setError(null)
-    fetch(
-      `${API_BASE_URL}/api/license-detail?market=${market}&lisansNo=${encodeURIComponent(
-        lisansNo
-      )}&page=${page}`
-    )
-      .then((res) => res.json())
+
+    fetchDetail(market, lisansNo, page)
       .then((json) => {
-        if (!json.success) throw new Error(json.error || 'API error')
-        setData(json.data)
+        if (cancelled) return
+        setData(json)
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Hata'))
-      .finally(() => setLoading(false))
+      .catch((err) => {
+        if (cancelled) return
+        if (!fromCache) setError(err instanceof Error ? err.message : 'Hata')
+      })
+      .finally(() => {
+        if (cancelled) return
+        setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [market, lisansNo, page])
 
   return { data, loading, error }

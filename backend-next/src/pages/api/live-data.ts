@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { applyCors } from '@/lib/cors'
+import { applyCors, applyPublicCache } from '@/lib/cors'
 import { queryEpdkGateway } from '@/lib/epdkGateway'
 
 type FuelPriceItem = {
@@ -77,6 +77,10 @@ export default async function handler(
   res: NextApiResponse<Data | { error: string }>
 ) {
   applyCors(req, res)
+  // Longer than the default -- the underlying data (exchange rates,
+  // fuel bulletins) is itself only refetched hourly (see CACHE_TTL
+  // above), so there's nothing to gain from a shorter edge TTL here.
+  applyPublicCache(res, { sMaxAge: 1800, staleWhileRevalidate: 3600 })
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

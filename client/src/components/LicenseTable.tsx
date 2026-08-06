@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { LicenseItem, Market } from '../hooks/useLicenses'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
+import { prefetchLicenseDetail } from '../hooks/useLicenseDetail'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -158,6 +159,16 @@ export default function LicenseTable({
                               `/license/detail?market=${
                                 (item as { market?: string }).market ?? market
                               }&lisansNo=${encodeURIComponent(item.lisansNo)}`
+                            )
+                        : undefined
+                    }
+                    onMouseEnter={
+                      market
+                        ? () =>
+                            prefetchLicenseDetail(
+                              ((item as { market?: string }).market ??
+                                market) as Market,
+                              item.lisansNo
                             )
                         : undefined
                     }

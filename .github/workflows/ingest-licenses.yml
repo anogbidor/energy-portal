@@ -11,7 +11,16 @@ on:
     # 15 min is a large freshness win over the old 6h interval while
     # staying well under the call volume Bayilik already handles safely
     # at 5-minute granularity.
-    - cron: '*/15 * * * *'
+    #
+    # Restricted to EPDK's active hours -- 08:00-20:00 Turkey time
+    # (UTC+3, no DST), i.e. 05:00-17:00 UTC. EPDK doesn't publish
+    # anything overnight, so polling then just burns EPDK's rate-limit
+    # budget and GitHub Actions minutes for zero benefit. Two entries:
+    # ticks every 15 min through the day, plus one exact tick at 17:00
+    # UTC (20:00 TRT) to catch anything right at the cutoff before going
+    # quiet until 05:00 UTC the next morning.
+    - cron: '*/15 5-16 * * *'
+    - cron: '0 17 * * *'
   workflow_dispatch: {}
 
 jobs:

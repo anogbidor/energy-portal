@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { applyCors } from '@/lib/cors'
+import { applyCors, applyPublicCache } from '@/lib/cors'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { toLicenseApiShape } from '@/lib/licenseApiShape'
 
@@ -32,6 +32,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   applyCors(req, res)
+  applyPublicCache(res)
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()

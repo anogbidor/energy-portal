@@ -8,7 +8,15 @@ on:
     # much stricter than a single burst-protection window, so this cycles
     # through the full distributor list gradually (roughly an hour or two
     # for a full pass) instead of trying to do it all in one run.
-    - cron: '*/5 * * * *'
+    #
+    # Restricted to EPDK's active hours -- 08:00-20:00 Turkey time
+    # (UTC+3, no DST), i.e. 05:00-17:00 UTC. Same reasoning as
+    # ingest-licenses.yml: EPDK doesn't publish anything overnight, so
+    # polling then wastes both EPDK's rate-limit budget and Actions
+    # minutes. The extra 17:00 UTC tick catches anything right at the
+    # 20:00 TRT cutoff before going quiet until 05:00 UTC.
+    - cron: '*/5 5-16 * * *'
+    - cron: '0 17 * * *'
   workflow_dispatch: {}
 
 # curl's --max-time below is set just under the API route's own
