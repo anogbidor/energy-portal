@@ -19,6 +19,7 @@ export default function Hero() {
   return (
     <section className='bg-gray-950 text-white'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center'>
+        <div className='w-10 h-1 rounded-full bg-brand-gold mx-auto mb-5' />
         <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
           Enerji ve Lisans Piyasaları
         </h1>

@@ -159,7 +159,7 @@ export default function Home() {
                           onClick={() => setCurrentSlide(index)}
                           className={`h-1.5 rounded-full transition-all ${
                             currentSlide === index
-                              ? 'w-6 bg-gray-900'
+                              ? 'w-6 bg-brand-purple'
                               : 'w-1.5 bg-gray-300'
                           }`}
                           aria-label={`${index + 1}. habere git`}

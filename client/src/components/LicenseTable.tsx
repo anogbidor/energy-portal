@@ -193,7 +193,7 @@ export default function LicenseTable({
                     onClick={() => goToPage(pageNum)}
                     className={`relative inline-flex items-center px-3 py-1 border text-xs font-medium ${
                       currentPage === pageNum
-                        ? 'z-10 bg-gray-900 border-gray-900 text-white'
+                        ? 'z-10 bg-brand-purple border-brand-purple text-white'
                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                     }`}
                   >

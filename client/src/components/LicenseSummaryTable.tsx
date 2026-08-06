@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useLicenseSummary, type MarketActivity } from '../hooks/useLicenseSummary'
+import { useLicenseSummary } from '../hooks/useLicenseSummary'
 import { STATUS_LABELS, STATUS_PILL_CLASS } from '../lib/licenseStatus'
 
 const MARKET_COLUMNS: { key: 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'; label: string }[] = [
@@ -9,6 +9,17 @@ const MARKET_COLUMNS: { key: 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'; label: 
   { key: 'dogalgaz', label: 'Doğalgaz' },
   { key: 'elektrik', label: 'Elektrik' },
 ]
+
+// Every non-active status the calendar can show, always listed in the
+// legend regardless of whether the current window happens to contain
+// one -- a fixed key is easier to learn than one that reshuffles week
+// to week.
+const ALL_STATUSES = [
+  'IPTAL_EDILDI',
+  'SONLANDIRILDI',
+  'IADE_EDILDI',
+  'FAALIYETI_GECICI_DURDURULDU',
+] as const
 
 const INITIAL_DAYS = 14
 const DAYS_STEP = 14
@@ -31,34 +42,22 @@ export default function LicenseSummaryTable() {
   const [days, setDays] = useState(INITIAL_DAYS)
   const { data, loading, error } = useLicenseSummary(days)
 
-  // Only show legend entries for statuses actually present in the
-  // current window, plus "Verilen" (issued) which is always relevant.
-  const presentStatuses = useMemo(() => {
-    const set = new Set<string>()
-    for (const day of data ?? []) {
-      for (const market of Object.values(day.counts) as MarketActivity[]) {
-        for (const status of Object.keys(market.statuses)) set.add(status)
-      }
-    }
-    return Array.from(set)
-  }, [data])
-
   return (
     <div className='bg-white rounded-xl border border-gray-200 overflow-hidden'>
-      <div className='px-5 py-4 border-b border-gray-200'>
+      <div className='px-5 py-3 border-b border-gray-200'>
         <h2 className='text-sm font-semibold text-gray-900'>Lisans Takvimi</h2>
         <p className='text-xs text-gray-500 mt-0.5'>
           Son {days} günde piyasa bazlı lisans durum değişiklikleri — bir
           tarihe tıklayarak detayları görüntüleyin
         </p>
-        <div className='flex flex-wrap items-center gap-3 mt-2 text-[11px] text-gray-500'>
+        <div className='flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[10px] text-gray-500'>
           <span className='inline-flex items-center gap-1'>
-            <span className='w-2 h-2 rounded-full bg-green-600' /> Verilen
+            <span className='w-1.5 h-1.5 rounded-full bg-green-600' /> Verilen
           </span>
-          {presentStatuses.map((status) => (
+          {ALL_STATUSES.map((status) => (
             <span key={status} className='inline-flex items-center gap-1'>
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full ${
                   statusPillClass(status).split(' ')[0]
                 }`}
               />
@@ -87,18 +86,18 @@ export default function LicenseSummaryTable() {
           <table className='min-w-full divide-y divide-gray-200'>
             <thead className='bg-gray-50'>
               <tr>
-                <th className='px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide'>
+                <th className='px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wide'>
                   Tarih
                 </th>
                 {MARKET_COLUMNS.map((col) => (
                   <th
                     key={col.key}
-                    className='px-4 py-2.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide'
+                    className='px-2 py-1.5 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wide'
                   >
                     {col.label}
                   </th>
                 ))}
-                <th className='px-4 py-2.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wide'>
+                <th className='px-3 py-1.5 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wide'>
                   Toplam
                 </th>
               </tr>
@@ -120,7 +119,7 @@ export default function LicenseSummaryTable() {
                 )
                 return (
                   <tr key={day.date} className='hover:bg-gray-50'>
-                    <td className='px-4 py-2.5 whitespace-nowrap text-sm text-gray-700 capitalize'>
+                    <td className='px-3 py-1.5 whitespace-nowrap text-xs text-gray-700 capitalize'>
                       {formatDate(day.date)}
                     </td>
                     {MARKET_COLUMNS.map((col) => {
@@ -131,18 +130,18 @@ export default function LicenseSummaryTable() {
                       const statusEntries = Object.entries(activity.statuses)
                       if (activity.issued === 0 && statusEntries.length === 0) {
                         return (
-                          <td key={col.key} className='px-4 py-2.5 text-center'>
+                          <td key={col.key} className='px-2 py-1.5 text-center'>
                             <span className='text-gray-300 text-xs'>—</span>
                           </td>
                         )
                       }
                       return (
-                        <td key={col.key} className='px-4 py-2.5'>
-                          <div className='flex items-center justify-center gap-1 flex-wrap'>
+                        <td key={col.key} className='px-1.5 py-1.5'>
+                          <div className='flex items-center justify-center gap-0.5 flex-wrap'>
                             {activity.issued > 0 && (
                               <Link
                                 to={`/license?market=${col.key}&date=${day.date}`}
-                                className={`inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${ISSUED_PILL_CLASS}`}
+                                className={`inline-flex items-center justify-center min-w-[1.5rem] px-1 py-0.5 rounded-full text-[10px] font-medium transition-colors ${ISSUED_PILL_CLASS}`}
                                 title='Verilen lisanslar'
                               >
                                 +{activity.issued}
@@ -152,7 +151,7 @@ export default function LicenseSummaryTable() {
                               <Link
                                 key={status}
                                 to={`/license?market=${col.key}&date=${day.date}`}
-                                className={`inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${statusPillClass(
+                                className={`inline-flex items-center justify-center min-w-[1.5rem] px-1 py-0.5 rounded-full text-[10px] font-medium transition-colors ${statusPillClass(
                                   status
                                 )}`}
                                 title={STATUS_LABELS[status] || status}
@@ -164,7 +163,7 @@ export default function LicenseSummaryTable() {
                         </td>
                       )
                     })}
-                    <td className='px-4 py-2.5 text-center text-sm font-medium text-gray-900 whitespace-nowrap'>
+                    <td className='px-3 py-1.5 text-center text-xs font-medium text-gray-900 whitespace-nowrap'>
                       {totalIssued > 0 && (
                         <span className='text-green-700'>+{totalIssued}</span>
                       )}

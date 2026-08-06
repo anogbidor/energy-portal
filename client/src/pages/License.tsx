@@ -183,7 +183,7 @@ export default function LicensesPage() {
 
       {urlDate && (
         <div className='mb-6 flex items-center justify-center gap-3 text-sm'>
-          <span className='inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-1.5 rounded-full'>
+          <span className='inline-flex items-center gap-2 bg-brand-purple text-white px-4 py-1.5 rounded-full'>
             {new Date(urlDate).toLocaleDateString('tr-TR')} tarihli lisanslar
             <button
               type='button'
@@ -210,7 +210,7 @@ export default function LicensesPage() {
             transition-all duration-200
             ${
               isSelected
-                ? 'bg-gray-900 text-white'
+                ? 'bg-brand-purple text-white'
                 : 'text-gray-600 hover:text-gray-900'
             }
             whitespace-nowrap
@@ -256,7 +256,7 @@ export default function LicensesPage() {
                 </div>
                 <input
                   type='text'
-                  className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 sm:text-sm'
+                  className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple sm:text-sm'
                   placeholder='Arama...'
                   value={searchTerm}
                   onChange={handleSearchChange}

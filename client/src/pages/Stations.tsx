@@ -142,7 +142,7 @@ export default function StationsPage() {
           <button
             type='button'
             onClick={() => window.location.reload()}
-            className='mt-4 px-4 py-2 text-sm text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors'
+            className='mt-4 px-4 py-2 text-sm text-white bg-brand-purple rounded-lg hover:bg-brand-purple-dark transition-colors'
           >
             Yeniden Dene
           </button>
@@ -181,7 +181,7 @@ export default function StationsPage() {
                 onClick={() => setViewMode('table')}
                 className={`px-3 py-2 transition-colors ${
                   viewMode === 'table'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-brand-purple text-white'
                     : 'bg-white text-gray-500 hover:bg-gray-50'
                 }`}
               >
@@ -194,7 +194,7 @@ export default function StationsPage() {
                 onClick={() => setViewMode('grid')}
                 className={`px-3 py-2 transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-brand-purple text-white'
                     : 'bg-white text-gray-500 hover:bg-gray-50'
                 }`}
               >
@@ -210,7 +210,7 @@ export default function StationsPage() {
               <input
                 type='text'
                 placeholder='İstasyon, ilçe veya servis ara...'
-                className='w-full pl-10 pr-9 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none transition-all bg-white'
+                className='w-full pl-10 pr-9 py-2 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple outline-none transition-all bg-white'
                 onChange={(e) => setSearch(e.target.value)}
                 value={search}
                 autoComplete='off'
@@ -453,7 +453,7 @@ export default function StationsPage() {
               <button
                 type='button'
                 onClick={clearFilters}
-                className='mt-4 px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors'
+                className='mt-4 px-4 py-2 text-sm bg-brand-purple text-white rounded-lg hover:bg-brand-purple-dark transition-colors'
               >
                 Filtreleri Temizle
               </button>

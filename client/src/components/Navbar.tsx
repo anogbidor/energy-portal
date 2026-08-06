@@ -29,9 +29,9 @@ export default function Navbar() {
         <div className='flex justify-between items-center h-16'>
           <Link to='/' className='flex items-center'>
             <img
-              src='./enerjiportal.png'
-              alt='Enerji Portal'
-              className='h-6 w-auto object-contain'
+              src='/enerjipost-light.svg'
+              alt='Enerjipost'
+              className='h-7 w-auto object-contain'
             />
           </Link>
 
@@ -43,7 +43,7 @@ export default function Navbar() {
                 to={item.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === item.path
-                    ? 'bg-white/10 text-white'
+                    ? 'bg-brand-purple/25 text-white'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >

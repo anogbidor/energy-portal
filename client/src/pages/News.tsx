@@ -62,7 +62,7 @@ export default function NewsPage() {
                 }}
                 className={`px-3.5 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5 whitespace-nowrap transition-colors border ${
                   activeCategory === category.name
-                    ? 'bg-gray-900 border-gray-900 text-white'
+                    ? 'bg-brand-purple border-brand-purple text-white'
                     : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -120,7 +120,7 @@ export default function NewsPage() {
                       href={featuredNews.link}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='inline-flex items-center mt-5 px-4 py-2 text-sm font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 transition-colors'
+                      className='inline-flex items-center mt-5 px-4 py-2 text-sm font-medium rounded-lg text-white bg-brand-purple hover:bg-brand-purple-dark transition-colors'
                     >
                       Haberin Devamı
                     </a>

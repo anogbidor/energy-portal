@@ -13,9 +13,9 @@ export default function Footer() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 py-10'>
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-6'>
           <img
-            src='./enerjiportal.png'
-            alt='Enerji Portal'
-            className='h-5 w-auto object-contain opacity-90'
+            src='/enerjipost-light.svg'
+            alt='Enerjipost'
+            className='h-6 w-auto object-contain opacity-90'
           />
           <nav className='flex flex-wrap gap-x-6 gap-y-2 text-sm'>
             {links.map((link) => (
@@ -30,7 +30,7 @@ export default function Footer() {
           </nav>
         </div>
         <div className='mt-8 pt-6 border-t border-white/10 text-xs text-gray-500'>
-          © {new Date().getFullYear()} Enerji Portal — EPDK lisans ve piyasa verileri.
+          © {new Date().getFullYear()} Enerjipost — EPDK lisans ve piyasa verileri.
         </div>
       </div>
     </footer>
