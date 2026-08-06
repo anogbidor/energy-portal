@@ -2,10 +2,16 @@ name: Ingest EPDK licenses
 
 on:
   schedule:
-    # Every 6 hours -- frequent enough for same-day visibility on
-    # regulatory/license changes without hammering EPDK's own rate limiter
-    # or needing Vercel's paid tier for finer-grained cron.
-    - cron: '0 */6 * * *'
+    # Every 15 minutes. Unlike the Bayilik endpoints (which need small
+    # batches + heavy pacing to survive EPDK's throttle -- see
+    # ingestBayilik.ts), the 4 distributor "give me everything" calls in
+    # a single run have completed clean with real record counts on every
+    # observed run, back-to-back with no artificial delay between them --
+    # this endpoint appears to sit under a much more permissive quota.
+    # 15 min is a large freshness win over the old 6h interval while
+    # staying well under the call volume Bayilik already handles safely
+    # at 5-minute granularity.
+    - cron: '*/15 * * * *'
   workflow_dispatch: {}
 
 jobs:

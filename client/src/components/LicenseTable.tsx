@@ -58,7 +58,7 @@ export default function LicenseTable({
                   <th
                     key={header.key}
                     scope='col'
-                    className='px-3 py-2 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:bg-gray-100'
+                    className='px-2 py-2 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:bg-gray-100'
                     onClick={() => onRequestSort(header.key)}
                   >
                     <div className='flex items-center'>
@@ -84,47 +84,47 @@ export default function LicenseTable({
                         i % 2 === 1 ? 'bg-gray-50/50' : ''
                       }`}
                     >
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs'>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeColorClass}`}
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeColorClass}`}
                         >
                           {statusLabel}
                         </span>
                       </td>
-                      <td className='px-3 py-2.5 text-xs font-medium text-gray-900'>
+                      <td className='px-2 py-2 text-xs font-medium text-gray-900 max-w-[160px] break-words'>
                         {item.lisansSahibiUnvani}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {item.lisansNo}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {item.vergiNo}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {new Date(item.baslangicTarihi).toLocaleDateString(
                           'tr-TR'
                         )}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {new Date(item.bitisTarihi).toLocaleDateString('tr-TR')}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {item.il || '-'}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {item.ilce || '-'}
                       </td>
-                      <td className='px-3 py-2.5 text-xs text-gray-500 max-w-xs'>
+                      <td className='px-2 py-2 text-xs text-gray-500 max-w-[160px] break-words'>
                         {item.adres || '-'}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
                         {item.iptalSonaErdirmeTarihi ? (
                           new Date(item.iptalSonaErdirmeTarihi).toLocaleDateString('tr-TR')
                         ) : (
                           <span className='text-gray-300'>-</span>
                         )}
                       </td>
-                      <td className='px-3 py-2.5 text-xs text-gray-500 max-w-xs'>
+                      <td className='px-2 py-2 text-xs text-gray-500 max-w-[160px] break-words'>
                         {item.iptalSonaErdimeAciklama || (
                           <span className='text-gray-300'>-</span>
                         )}

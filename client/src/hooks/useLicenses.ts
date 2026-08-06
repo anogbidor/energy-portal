@@ -36,7 +36,7 @@ interface UseLicensesResult {
 }
 
 export function useLicenses(
-  initialMarket: Market = 'lpg',
+  initialMarket: Market = 'petrol',
   date?: string
 ): UseLicensesResult {
   const [market, setMarket] = useState<Market>(initialMarket)
