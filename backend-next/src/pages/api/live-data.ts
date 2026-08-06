@@ -1,13 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { applyCors, applyPublicCache } from '@/lib/cors'
-import { queryEpdkGateway } from '@/lib/epdkGateway'
-
-type FuelPriceItem = {
-  yakit: string
-  fiyat: number
-  olcuBirimi: string
-  tarih: string
-}
+import { fetchBulletin, type FuelPriceItem } from '@/lib/fuelBulletin'
 
 type Data = {
   brent: number | null
@@ -32,45 +25,6 @@ let lastExchangeFetch = 0
 let cachedBulletins: { fuelPrices: FuelPriceItem[]; lpgPrices: FuelPriceItem[] } | null =
   null
 let lastBulletinFetch = 0
-
-function formatDateForEpdk(date: Date): string {
-  const dd = String(date.getDate()).padStart(2, '0')
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  return `${dd}.${mm}.${date.getFullYear()}`
-}
-
-interface BulletinResponse {
-  statusCode: number
-  data: { Tarih: string; Yakıt: string; 'Ölçü Birimi': string; Fiyat: number }[]
-}
-
-// The bulletin requires an exact raporTarihi and returns nothing useful for
-// a date it hasn't published yet, so today is tried first and yesterday
-// as a fallback in case today's bulletin isn't out yet.
-async function fetchBulletin(serviceName: string): Promise<FuelPriceItem[]> {
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  for (const date of [today, yesterday]) {
-    try {
-      const result = await queryEpdkGateway<BulletinResponse>(serviceName, {
-        raporTarihi: formatDateForEpdk(date),
-      })
-      if (result?.data?.length) {
-        return result.data.map((row) => ({
-          yakit: row['Yakıt'],
-          fiyat: row.Fiyat,
-          olcuBirimi: row['Ölçü Birimi'],
-          tarih: row['Tarih'],
-        }))
-      }
-    } catch {
-      // try the earlier date
-    }
-  }
-  return []
-}
 
 export default async function handler(
   req: NextApiRequest,

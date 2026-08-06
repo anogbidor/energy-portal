@@ -1,5 +1,6 @@
 // src/pages/Prices.tsx
 import FuelPrice from '../components/FuelPrice'
+import FuelPriceTrends from '../components/FuelPriceTrends'
 import ExchangeRates from '../components/ExchangeRates'
 import {
   CurrencyDollarIcon,
@@ -39,6 +40,18 @@ export default function Prices() {
               </div>
               <div className='p-5'>
                 <FuelPrice />
+              </div>
+            </div>
+
+            {/* Price Trend Section */}
+            <div className='bg-white rounded-xl border border-gray-200'>
+              <div className='px-5 py-4 border-b border-gray-200'>
+                <h2 className='text-sm font-semibold text-gray-900'>
+                  Fiyat Trendi
+                </h2>
+              </div>
+              <div className='p-5'>
+                <FuelPriceTrends />
               </div>
             </div>
 

@@ -1,0 +1,42 @@
+name: Snapshot price and network history
+
+on:
+  schedule:
+    # Once a day, 19:00 Turkey time (16:00 UTC) -- late enough in EPDK's
+    # 08:00-20:00 publishing window to capture that day's settled state,
+    # early enough to stay inside it. These feed the price-trend and
+    # distributor network-health charts, which only need one data point
+    # per day, not continuous polling.
+    - cron: '0 16 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  snapshot-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Snapshot today's fuel/LPG bulletin
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 60 \
+            -X GET "https://energy-portal-backend.vercel.app/api/cron/snapshot-prices" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 400 ]; then
+            echo "Price snapshot failed"
+            exit 1
+          fi
+
+  snapshot-network:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Snapshot today's distributor network sizes
+        run: |
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 120 \
+            -X GET "https://energy-portal-backend.vercel.app/api/cron/snapshot-network" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
+          echo "HTTP status: $status"
+          cat /tmp/response.json
+          if [ "$status" -ge 400 ]; then
+            echo "Network snapshot failed"
+            exit 1
+          fi

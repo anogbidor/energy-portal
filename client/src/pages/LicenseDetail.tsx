@@ -1,8 +1,10 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
 import { useLicenseDetail, type HistoryEvent } from '../hooks/useLicenseDetail'
+import { useNetworkHistory } from '../hooks/useNetworkHistory'
 import type { Market } from '../hooks/useLicenses'
 import LicenseTable from '../components/LicenseTable'
+import Sparkline from '../components/Sparkline'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
 
 const NETWORK_HEADERS = [
@@ -72,6 +74,13 @@ export default function LicenseDetail() {
     market ?? undefined,
     lisansNo ?? undefined,
     networkPage
+  )
+  // Harmless to call unconditionally even for a bayilik record (React's
+  // rules of hooks require it) -- there just won't be any snapshot rows
+  // for a lisansNo that was never a distributor.
+  const { data: networkHistory } = useNetworkHistory(
+    market ?? undefined,
+    lisansNo ?? undefined
   )
 
   if (!market || !lisansNo) {
@@ -203,6 +212,27 @@ export default function LicenseDetail() {
                 )}
               </dl>
             </div>
+
+            {data.network !== null && (
+              <div className='bg-white border border-gray-200 rounded-xl p-6 mb-6'>
+                <h2 className='text-sm font-semibold text-gray-900'>
+                  Ağ Büyüklüğü
+                </h2>
+                <p className='text-xs text-gray-500 mt-0.5 mb-4'>
+                  Aktif bayi sayısı, son 90 gün
+                </p>
+                <Sparkline
+                  data={
+                    networkHistory?.map((row) => ({
+                      date: row.snapshot_date,
+                      value: row.active_dealer_count,
+                    })) ?? []
+                  }
+                  color='#624b99'
+                  formatValue={(v) => Math.round(v).toLocaleString('tr-TR')}
+                />
+              </div>
+            )}
 
             {data.network !== null && (
               <div className='bg-white border border-gray-200 rounded-xl overflow-hidden'>
