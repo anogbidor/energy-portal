@@ -110,8 +110,12 @@ export async function runBayilikIngestion(
             .from('licenses')
             .update({ bayilik_last_fetched_at: now })
             .eq('id', id)
-        } catch {
+        } catch (error) {
           failures++
+          console.error(
+            `Bayilik fetch failed for ${dagiticiLisansNo} (${market}):`,
+            error instanceof Error ? error.message : error
+          )
         }
 
         await sleep(DELAY_BETWEEN_CALLS_MS)
