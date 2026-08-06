@@ -1,5 +1,6 @@
 // import React from 'react'
 import type { LicenseItem } from '../hooks/useLicenses'
+import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -12,15 +13,6 @@ interface LicenseTableProps {
   itemsPerPage: number
   totalItems: number
   onPageChange: (page: number) => void
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  SONLANDIRILDI: 'Sonlandırıldı',
-  IPTAL_EDILDI: 'İptal Edildi',
-  SURESI_DOLDU: 'Süresi Doldu',
-  YURURLUKTEN_KALDIRILDI: 'Yürürlükten Kaldırıldı',
-  FAALIYETI_GECICI_DURDURULDU: 'Faaliyeti Geçici Durduruldu',
-  ONAYLANDI: 'Yürürlükte',
 }
 
 export default function LicenseTable({
@@ -47,6 +39,11 @@ export default function LicenseTable({
   function displayStatus(status: string) {
     const normalized = status.toUpperCase().replace(/\s+/g, '_')
     return STATUS_LABELS[normalized] || status
+  }
+
+  function badgeClass(status: string) {
+    const normalized = status.toUpperCase().replace(/\s+/g, '_')
+    return STATUS_BADGE_CLASS[normalized] || 'bg-gray-100 text-gray-600'
   }
 
   return (
@@ -78,23 +75,7 @@ export default function LicenseTable({
               {data.length > 0 ? (
                 data.map((item, i) => {
                   const statusLabel = displayStatus(item.lisansDurumu)
-
-                  const badgeColorClass = (() => {
-                    switch (statusLabel) {
-                      case 'Yürürlükte':
-                        return 'bg-green-50 text-green-700'
-                      case 'Faaliyeti Geçici Durduruldu':
-                        return 'bg-amber-50 text-amber-700'
-                      case 'İptal Edildi':
-                        return 'bg-red-50 text-red-700'
-                      case 'Süresi Doldu':
-                        return 'bg-purple-50 text-purple-700'
-                      case 'Sonlandırıldı':
-                        return 'bg-gray-100 text-gray-600'
-                      default:
-                        return 'bg-gray-100 text-gray-600'
-                    }
-                  })()
+                  const badgeColorClass = badgeClass(item.lisansDurumu)
 
                   return (
                     <tr

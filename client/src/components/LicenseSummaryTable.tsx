@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useLicenseSummary } from '../hooks/useLicenseSummary'
+import { useLicenseSummary, type MarketActivity } from '../hooks/useLicenseSummary'
+import { STATUS_LABELS, STATUS_PILL_CLASS } from '../lib/licenseStatus'
 
 const MARKET_COLUMNS: { key: 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'; label: string }[] = [
   { key: 'petrol', label: 'Petrol' },
@@ -12,6 +13,7 @@ const MARKET_COLUMNS: { key: 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'; label: 
 const INITIAL_DAYS = 14
 const DAYS_STEP = 14
 const MAX_DAYS = 60
+const ISSUED_PILL_CLASS = 'bg-green-600 text-white hover:bg-green-700'
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString('tr-TR', {
@@ -21,25 +23,48 @@ function formatDate(value: string) {
   })
 }
 
+function statusPillClass(status: string) {
+  return STATUS_PILL_CLASS[status] || 'bg-slate-500 text-white hover:bg-slate-600'
+}
+
 export default function LicenseSummaryTable() {
   const [days, setDays] = useState(INITIAL_DAYS)
   const { data, loading, error } = useLicenseSummary(days)
+
+  // Only show legend entries for statuses actually present in the
+  // current window, plus "Verilen" (issued) which is always relevant.
+  const presentStatuses = useMemo(() => {
+    const set = new Set<string>()
+    for (const day of data ?? []) {
+      for (const market of Object.values(day.counts) as MarketActivity[]) {
+        for (const status of Object.keys(market.statuses)) set.add(status)
+      }
+    }
+    return Array.from(set)
+  }, [data])
 
   return (
     <div className='bg-white rounded-xl border border-gray-200 overflow-hidden'>
       <div className='px-5 py-4 border-b border-gray-200'>
         <h2 className='text-sm font-semibold text-gray-900'>Lisans Takvimi</h2>
         <p className='text-xs text-gray-500 mt-0.5'>
-          Son {days} günde piyasa bazlı verilen ve iptal edilen lisans
-          sayıları — bir tarihe tıklayarak detayları görüntüleyin
+          Son {days} günde piyasa bazlı lisans durum değişiklikleri — bir
+          tarihe tıklayarak detayları görüntüleyin
         </p>
-        <div className='flex items-center gap-3 mt-2 text-[11px] text-gray-500'>
+        <div className='flex flex-wrap items-center gap-3 mt-2 text-[11px] text-gray-500'>
           <span className='inline-flex items-center gap-1'>
-            <span className='w-2 h-2 rounded-full bg-green-500' /> Verilen
+            <span className='w-2 h-2 rounded-full bg-green-600' /> Verilen
           </span>
-          <span className='inline-flex items-center gap-1'>
-            <span className='w-2 h-2 rounded-full bg-red-500' /> İptal Edilen
-          </span>
+          {presentStatuses.map((status) => (
+            <span key={status} className='inline-flex items-center gap-1'>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  statusPillClass(status).split(' ')[0]
+                }`}
+              />
+              {STATUS_LABELS[status] || status}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -84,8 +109,13 @@ export default function LicenseSummaryTable() {
                   (sum, col) => sum + (day.counts[col.key]?.issued ?? 0),
                   0
                 )
-                const totalCancelled = MARKET_COLUMNS.reduce(
-                  (sum, col) => sum + (day.counts[col.key]?.cancelled ?? 0),
+                const totalOther = MARKET_COLUMNS.reduce(
+                  (sum, col) =>
+                    sum +
+                    Object.values(day.counts[col.key]?.statuses ?? {}).reduce(
+                      (a, b) => a + b,
+                      0
+                    ),
                   0
                 )
                 return (
@@ -94,11 +124,12 @@ export default function LicenseSummaryTable() {
                       {formatDate(day.date)}
                     </td>
                     {MARKET_COLUMNS.map((col) => {
-                      const { issued, cancelled } = day.counts[col.key] ?? {
+                      const activity = day.counts[col.key] ?? {
                         issued: 0,
-                        cancelled: 0,
+                        statuses: {},
                       }
-                      if (issued === 0 && cancelled === 0) {
+                      const statusEntries = Object.entries(activity.statuses)
+                      if (activity.issued === 0 && statusEntries.length === 0) {
                         return (
                           <td key={col.key} className='px-4 py-2.5 text-center'>
                             <span className='text-gray-300 text-xs'>—</span>
@@ -107,25 +138,28 @@ export default function LicenseSummaryTable() {
                       }
                       return (
                         <td key={col.key} className='px-4 py-2.5'>
-                          <div className='flex items-center justify-center gap-1'>
-                            {issued > 0 && (
+                          <div className='flex items-center justify-center gap-1 flex-wrap'>
+                            {activity.issued > 0 && (
                               <Link
                                 to={`/license?market=${col.key}&date=${day.date}`}
-                                className='inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors'
+                                className={`inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${ISSUED_PILL_CLASS}`}
                                 title='Verilen lisanslar'
                               >
-                                +{issued}
+                                +{activity.issued}
                               </Link>
                             )}
-                            {cancelled > 0 && (
+                            {statusEntries.map(([status, count]) => (
                               <Link
+                                key={status}
                                 to={`/license?market=${col.key}&date=${day.date}`}
-                                className='inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition-colors'
-                                title='İptal edilen lisanslar'
+                                className={`inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${statusPillClass(
+                                  status
+                                )}`}
+                                title={STATUS_LABELS[status] || status}
                               >
-                                -{cancelled}
+                                -{count}
                               </Link>
-                            )}
+                            ))}
                           </div>
                         </td>
                       )
@@ -134,9 +168,9 @@ export default function LicenseSummaryTable() {
                       {totalIssued > 0 && (
                         <span className='text-green-700'>+{totalIssued}</span>
                       )}
-                      {totalIssued > 0 && totalCancelled > 0 && ' / '}
-                      {totalCancelled > 0 && (
-                        <span className='text-red-700'>-{totalCancelled}</span>
+                      {totalIssued > 0 && totalOther > 0 && ' / '}
+                      {totalOther > 0 && (
+                        <span className='text-gray-600'>-{totalOther}</span>
                       )}
                     </td>
                   </tr>

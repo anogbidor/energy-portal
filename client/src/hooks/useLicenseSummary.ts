@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 export interface MarketActivity {
   issued: number
-  cancelled: number
+  statuses: Record<string, number>
 }
 
 export interface LicenseSummaryDay {

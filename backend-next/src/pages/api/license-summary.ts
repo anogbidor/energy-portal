@@ -8,15 +8,31 @@ const MARKETS = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 const DEFAULT_DAYS = 14
 const MAX_DAYS = 60
 
-// Calendar-style summary: one row per date, one { issued, cancelled }
-// pair per market, for the homepage's day-by-day overview (click a date
-// to drill into that day's actual licenses via /license?market=X&date=Y).
-// Grouping only by baslangic_tarihi (issuance date) made every single
-// cancellation invisible -- a license cancelled today keeps the
-// baslangic_tarihi from whenever it was originally issued, often months
-// or years back, so it would never land in a "last N days" window keyed
-// on that field alone. This tracks both the issuance date and the
-// cancellation date (iptal_tarihi) as separate activity per license.
+// Non-active statuses that can appear on iptal_tarihi-dated activity.
+// EPDK's real status set (see LICENSE_STATUSES in epdkGateway.ts) --
+// FAALIYETI_GECICI_DURDURULDU is a temporary suspension, not a true
+// end, but it still carries an iptal_tarihi-equivalent effective date
+// so it's tracked here rather than silently dropped.
+const NON_ACTIVE_STATUSES = [
+  'IPTAL_EDILDI',
+  'SONLANDIRILDI',
+  'IADE_EDILDI',
+  'FAALIYETI_GECICI_DURDURULDU',
+] as const
+
+// Calendar-style summary: one row per date, one { issued, statuses }
+// entry per market, for the homepage's day-by-day overview (click a
+// date to drill into that day's actual licenses via
+// /license?market=X&date=Y). Grouping only by baslangic_tarihi
+// (issuance date) made every non-active status invisible -- a license
+// terminated today keeps the baslangic_tarihi from whenever it was
+// originally issued, often months or years back, so it would never
+// land in a "last N days" window keyed on that field alone. This
+// tracks both the issuance date and, separately, the status-change
+// date (iptal_tarihi) broken down by the actual resulting status --
+// lumping every non-active status into one generic "cancelled" bucket
+// was itself misleading, since most real activity turned out to be
+// SONLANDIRILDI (terminated), not IPTAL_EDILDI (cancelled).
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -41,32 +57,49 @@ export default async function handler(
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('licenses')
-      .select('market, baslangic_tarihi, iptal_tarihi')
+      .select('market, baslangic_tarihi, iptal_tarihi, lisans_durumu')
       .or(`baslangic_tarihi.gte.${sinceStr},iptal_tarihi.gte.${sinceStr}`)
 
     if (error) throw error
 
+    type MarketActivity = { issued: number; statuses: Record<string, number> }
+
     const emptyDayCounts = () =>
       Object.fromEntries(
-        MARKETS.map((m) => [m, { issued: 0, cancelled: 0 }])
-      ) as Record<string, { issued: number; cancelled: number }>
+        MARKETS.map((m) => [m, { issued: 0, statuses: {} }])
+      ) as Record<string, MarketActivity>
 
-    const counts = new Map<string, Record<string, { issued: number; cancelled: number }>>()
+    const counts = new Map<string, Record<string, MarketActivity>>()
 
-    const bump = (date: string, market: string, key: 'issued' | 'cancelled') => {
+    const bumpIssued = (date: string, market: string) => {
       if (!counts.has(date)) counts.set(date, emptyDayCounts())
       const dayCounts = counts.get(date)!
-      if (!dayCounts[market]) dayCounts[market] = { issued: 0, cancelled: 0 }
-      dayCounts[market][key] += 1
+      if (!dayCounts[market]) dayCounts[market] = { issued: 0, statuses: {} }
+      dayCounts[market].issued += 1
+    }
+
+    const bumpStatus = (date: string, market: string, status: string) => {
+      if (!counts.has(date)) counts.set(date, emptyDayCounts())
+      const dayCounts = counts.get(date)!
+      if (!dayCounts[market]) dayCounts[market] = { issued: 0, statuses: {} }
+      dayCounts[market].statuses[status] =
+        (dayCounts[market].statuses[status] ?? 0) + 1
     }
 
     for (const row of data ?? []) {
       const market = row.market as string
       const baslangic = row.baslangic_tarihi as string | null
       const iptal = row.iptal_tarihi as string | null
+      const status = row.lisans_durumu as string
 
-      if (baslangic && baslangic >= sinceStr) bump(baslangic, market, 'issued')
-      if (iptal && iptal >= sinceStr) bump(iptal, market, 'cancelled')
+      if (baslangic && baslangic >= sinceStr) bumpIssued(baslangic, market)
+      if (
+        iptal &&
+        iptal >= sinceStr &&
+        (NON_ACTIVE_STATUSES as readonly string[]).includes(status)
+      ) {
+        bumpStatus(iptal, market, status)
+      }
     }
 
     const summary = Array.from(counts.entries())
