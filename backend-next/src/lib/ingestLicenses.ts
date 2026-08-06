@@ -135,14 +135,39 @@ export async function ingestLicenses(
     isFirstRun = !priorSuccessCount
   }
 
-  const { data: existingRows } = await supabase
-    .from('licenses')
-    .select('*')
-    .eq('market', market)
-    .eq('license_type', licenseType)
+  // Scoped to this batch's own license numbers -- PostgREST caps a plain
+  // .select('*') at 1000 rows server-side regardless of .limit()
+  // (confirmed directly against this project), and petrol alone has
+  // 30,000+ bayilik rows. Fetching unscoped here meant any record
+  // outside whatever arbitrary 1000-row subset came back was treated as
+  // "new" even when it already existed -- generating false "issued"
+  // events and, worse, silently resetting first_seen_at for records
+  // that had been tracked since much earlier. Scoping by lisans_no
+  // fixes correctness and is also far cheaper than fetching the whole
+  // market+type table on every single ingestion run. Chunked because a
+  // single large distributor (e.g. Petrol Ofisi's 6,096 dealers) would
+  // otherwise build one .in() filter long enough to risk URL-length
+  // limits -- each chunk also stays safely under the 1000-row cap
+  // since a chunk can return at most as many rows as values in it.
+  const IN_CHUNK_SIZE = 400
+  const batchLisansNos = records
+    .map((r) => r.lisansNo)
+    .filter((n): n is string => Boolean(n))
+
+  const existingRows: Record<string, unknown>[] = []
+  for (let i = 0; i < batchLisansNos.length; i += IN_CHUNK_SIZE) {
+    const chunk = batchLisansNos.slice(i, i + IN_CHUNK_SIZE)
+    const { data } = await supabase
+      .from('licenses')
+      .select('*')
+      .eq('market', market)
+      .eq('license_type', licenseType)
+      .in('lisans_no', chunk)
+    if (data) existingRows.push(...data)
+  }
 
   const existingByLisansNo = new Map(
-    (existingRows ?? []).map((row) => [row.lisans_no as string, row])
+    existingRows.map((row) => [row.lisans_no as string, row])
   )
 
   const now = new Date().toISOString()
@@ -248,7 +273,7 @@ export async function ingestLicenses(
 
     return {
       ...mapped,
-      first_seen_at: existing.first_seen_at,
+      first_seen_at: existing.first_seen_at as string,
       last_seen_at: now,
       updated_at: now,
     }
