@@ -62,6 +62,22 @@ export default async function handler(
 
     if (error) throw error
 
+    // Company-title changes and distributor reassignments aren't a
+    // "lisans_durumu" value at all -- EPDK's status field genuinely only
+    // has the 5 NON_ACTIVE_STATUSES/ONAYLANDI values (verified directly
+    // against the full licenses table). These are diff-based events
+    // (see license_events, event_type unvan_changed/distributor_changed)
+    // detected by comparing two observations of the same license, so
+    // they're layered into the same per-day/market bucket using
+    // synthetic keys rather than real EPDK status codes.
+    const { data: eventRows, error: eventsError } = await supabase
+      .from('license_events')
+      .select('market, event_type, effective_at')
+      .in('event_type', ['distributor_changed', 'unvan_changed'])
+      .gte('effective_at', sinceStr)
+
+    if (eventsError) throw eventsError
+
     type MarketActivity = { issued: number; statuses: Record<string, number> }
 
     const emptyDayCounts = () =>
@@ -100,6 +116,16 @@ export default async function handler(
       ) {
         bumpStatus(iptal, market, status)
       }
+    }
+
+    const EVENT_TYPE_TO_KEY: Record<string, string> = {
+      unvan_changed: 'UNVAN_DEGISIKLIGI',
+      distributor_changed: 'TRANSFER_EDILDI',
+    }
+
+    for (const row of eventRows ?? []) {
+      const key = EVENT_TYPE_TO_KEY[row.event_type as string]
+      if (key) bumpStatus(row.effective_at as string, row.market as string, key)
     }
 
     const summary = Array.from(counts.entries())

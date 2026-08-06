@@ -210,16 +210,21 @@ export async function ingestLicenses(
       const isDistributorChange =
         'dagitim_sirketi' in changed || 'dagitici_lisans_no' in changed
       const isStatusChange = 'lisans_durumu' in changed
+      const isUnvanChange = 'lisans_sahibi_unvani' in changed
+
+      const eventType = isDistributorChange
+        ? 'distributor_changed'
+        : isStatusChange
+        ? 'status_changed'
+        : isUnvanChange
+        ? 'unvan_changed'
+        : 'updated'
 
       events.push({
         lisans_no: mapped.lisans_no,
         market,
         license_type: licenseType,
-        event_type: isDistributorChange
-          ? 'distributor_changed'
-          : isStatusChange
-          ? 'status_changed'
-          : 'updated',
+        event_type: eventType,
         old_value: Object.fromEntries(
           Object.entries(changed).map(([k, v]) => [k, v.old])
         ),
@@ -227,7 +232,17 @@ export async function ingestLicenses(
           Object.entries(changed).map(([k, v]) => [k, v.new])
         ),
         note: mapped.iptal_aciklama,
-        effective_at: mapped.iptal_tarihi ?? mapped.baslangic_tarihi,
+        // Status changes have a real EPDK-provided date (iptal_tarihi) to
+        // anchor on. Distributor/unvan changes and generic updates don't --
+        // there's no field EPDK gives us for "the date this specific field
+        // changed" -- so those use the date we actually observed the diff.
+        // (Using baslangic_tarihi as a fallback here, as status_changed
+        // does, would be wrong: it'd anchor a transfer or rename that
+        // happened today to whenever the license was originally issued,
+        // possibly years back.)
+        effective_at: isStatusChange
+          ? mapped.iptal_tarihi ?? mapped.baslangic_tarihi
+          : now.slice(0, 10),
       })
     }
 
