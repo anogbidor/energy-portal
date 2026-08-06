@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react'
 import type { LicenseItem, Market } from './useLicenses'
 
-export interface DistributorTransfer {
-  fromDistributor: string | null
-  toDistributor: string | null
+export type EventType =
+  | 'issued'
+  | 'status_changed'
+  | 'unvan_changed'
+  | 'distributor_changed'
+  | 'updated'
+
+export interface HistoryEvent {
+  eventType: EventType
+  oldValue: Record<string, unknown> | null
+  newValue: Record<string, unknown> | null
+  note: string | null
   effectiveAt: string | null
 }
 
 export interface LicenseDetailData {
-  license: LicenseItem & { licenseType: string; dagitimSirketi?: string | null }
+  license: LicenseItem & {
+    licenseType: string
+    dagitimSirketi?: string | null
+    market: string
+  }
   network: LicenseItem[] | null
   networkCount: number | null
-  history: DistributorTransfer[] | null
+  history: HistoryEvent[] | null
+  relatedLicenses: (LicenseItem & { market: string; licenseType: string })[] | null
+  relatedLicensesCount: number | null
 }
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''

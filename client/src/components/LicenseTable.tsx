@@ -52,6 +52,75 @@ export default function LicenseTable({
     return STATUS_BADGE_CLASS[normalized] || 'bg-gray-100 text-gray-600'
   }
 
+  const MARKET_LABELS: Record<string, string> = {
+    petrol: 'Petrol',
+    lpg: 'LPG',
+    dogalgaz: 'Doğalgaz',
+    elektrik: 'Elektrik',
+  }
+
+  // Keyed by tableHeaders[].key so callers can pick any subset/order of
+  // columns -- previously the body always rendered a fixed 11 columns
+  // regardless of what tableHeaders declared, silently mismatching any
+  // caller that passed a shorter header list.
+  function renderCell(item: LicenseItem & { market?: string }, key: string) {
+    switch (key) {
+      case 'lisansDurumu':
+        return (
+          <span
+            className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
+              item.lisansDurumu
+            )}`}
+          >
+            {displayStatus(item.lisansDurumu)}
+          </span>
+        )
+      case 'lisansSahibiUnvani':
+        return item.lisansSahibiUnvani
+      case 'lisansNo':
+        return item.lisansNo
+      case 'vergiNo':
+        return item.vergiNo
+      case 'baslangicTarihi':
+        return new Date(item.baslangicTarihi).toLocaleDateString('tr-TR')
+      case 'bitisTarihi':
+        return new Date(item.bitisTarihi).toLocaleDateString('tr-TR')
+      case 'il':
+        return item.il || '-'
+      case 'ilce':
+        return item.ilce || '-'
+      case 'adres':
+        return item.adres || '-'
+      case 'market':
+        return MARKET_LABELS[item.market ?? ''] ?? item.market ?? '-'
+      case 'iptalTarihi':
+        return item.iptalSonaErdirmeTarihi ? (
+          new Date(item.iptalSonaErdirmeTarihi).toLocaleDateString('tr-TR')
+        ) : (
+          <span className='text-gray-300'>-</span>
+        )
+      case 'iptalAciklama':
+        return (
+          item.iptalSonaErdimeAciklama || <span className='text-gray-300'>-</span>
+        )
+      default:
+        return '-'
+    }
+  }
+
+  const WRAPPING_KEYS = new Set(['lisansSahibiUnvani', 'adres', 'iptalAciklama'])
+  const NOWRAP_KEYS = new Set([
+    'lisansDurumu',
+    'lisansNo',
+    'vergiNo',
+    'baslangicTarihi',
+    'bitisTarihi',
+    'il',
+    'ilce',
+    'market',
+    'iptalTarihi',
+  ])
+
   return (
     <>
       {/* Table container */}
@@ -79,75 +148,39 @@ export default function LicenseTable({
             </thead>
             <tbody className='divide-y divide-gray-100 bg-white'>
               {data.length > 0 ? (
-                data.map((item, i) => {
-                  const statusLabel = displayStatus(item.lisansDurumu)
-                  const badgeColorClass = badgeClass(item.lisansDurumu)
-
-                  return (
-                    <tr
-                      key={`${item.lisansNo}-${i}`}
-                      onClick={
-                        market
-                          ? () =>
-                              navigate(
-                                `/license/detail?market=${market}&lisansNo=${encodeURIComponent(
-                                  item.lisansNo
-                                )}`
-                              )
-                          : undefined
-                      }
-                      className={`hover:bg-gray-50 transition-colors ${
-                        market ? 'cursor-pointer' : ''
-                      } ${i % 2 === 1 ? 'bg-gray-50/50' : ''}`}
-                    >
-                      <td className='whitespace-nowrap px-2 py-2 text-xs'>
-                        <span
-                          className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeColorClass}`}
-                        >
-                          {statusLabel}
-                        </span>
+                data.map((item, i) => (
+                  <tr
+                    key={`${item.lisansNo}-${i}`}
+                    onClick={
+                      market
+                        ? () =>
+                            navigate(
+                              `/license/detail?market=${
+                                (item as { market?: string }).market ?? market
+                              }&lisansNo=${encodeURIComponent(item.lisansNo)}`
+                            )
+                        : undefined
+                    }
+                    className={`hover:bg-gray-50 transition-colors ${
+                      market ? 'cursor-pointer' : ''
+                    } ${i % 2 === 1 ? 'bg-gray-50/50' : ''}`}
+                  >
+                    {tableHeaders.map((header) => (
+                      <td
+                        key={header.key}
+                        className={`px-2 py-2 text-xs ${
+                          header.key === 'lisansSahibiUnvani'
+                            ? 'font-medium text-gray-900'
+                            : 'text-gray-500'
+                        } ${NOWRAP_KEYS.has(header.key) ? 'whitespace-nowrap' : ''} ${
+                          WRAPPING_KEYS.has(header.key) ? 'max-w-[160px] break-words' : ''
+                        }`}
+                      >
+                        {renderCell(item, header.key)}
                       </td>
-                      <td className='px-2 py-2 text-xs font-medium text-gray-900 max-w-[160px] break-words'>
-                        {item.lisansSahibiUnvani}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {item.lisansNo}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {item.vergiNo}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {new Date(item.baslangicTarihi).toLocaleDateString(
-                          'tr-TR'
-                        )}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {new Date(item.bitisTarihi).toLocaleDateString('tr-TR')}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {item.il || '-'}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {item.ilce || '-'}
-                      </td>
-                      <td className='px-2 py-2 text-xs text-gray-500 max-w-[160px] break-words'>
-                        {item.adres || '-'}
-                      </td>
-                      <td className='whitespace-nowrap px-2 py-2 text-xs text-gray-500'>
-                        {item.iptalSonaErdirmeTarihi ? (
-                          new Date(item.iptalSonaErdirmeTarihi).toLocaleDateString('tr-TR')
-                        ) : (
-                          <span className='text-gray-300'>-</span>
-                        )}
-                      </td>
-                      <td className='px-2 py-2 text-xs text-gray-500 max-w-[160px] break-words'>
-                        {item.iptalSonaErdimeAciklama || (
-                          <span className='text-gray-300'>-</span>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })
+                    ))}
+                  </tr>
+                ))
               ) : (
                 <tr>
                   <td

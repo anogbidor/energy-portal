@@ -5,20 +5,28 @@ import { toLicenseApiShape } from '@/lib/licenseApiShape'
 
 type Data = { success: true; data: unknown } | { success: false; error: string }
 
-// Single-license detail view backing the "who's under this distributor /
-// which distributor is this dealer under, and where were they before"
-// feature: for a dagitici (distributor), returns every bayilik (dealer)
-// license currently under it; for a bayilik, returns its full
-// distributor-transfer history reconstructed from license_events
-// (event_type='distributor_changed'), which was already being detected
-// and stored but never surfaced anywhere until now.
+// Single-license detail view. Three things, for both dagitici
+// (distributor) and bayilik (dealer) records alike:
 //
-// The dagitici<->bayilik link is matched by company name
-// (dagitim_sirketi / lisans_sahibi_unvani), not license number. EPDK's
-// bayilik responses were checked directly (raw column) and never include
-// a distributor license-number field at all -- only the distributor's
-// name -- so dagitici_lisans_no on bayilik rows has been unpopulated
-// (always null) since it was written; it isn't a real field EPDK sends.
+// 1. network / networkCount -- dagitici only: every bayilik currently
+//    under it. Matched by company name (dagitim_sirketi /
+//    lisans_sahibi_unvani), not license number -- EPDK's bayilik
+//    responses were checked directly (raw column) and never include a
+//    distributor license-number field at all, only the distributor's
+//    name -- so dagitici_lisans_no on bayilik rows has been unpopulated
+//    since it was written; it isn't a real field EPDK sends.
+//
+// 2. history -- every event_type ever recorded for this exact license
+//    (issued, status changes, title changes, distributor transfers),
+//    not just transfers. This is the full lifecycle of one specific
+//    license number.
+//
+// 3. relatedLicenses -- every OTHER license (any market, any type)
+//    sharing this record's vergi_no. A dealer applicant's tax ID is the
+//    one reliable key linking all of their licenses together across
+//    different stations/markets/distributors over time -- the point is
+//    to let a distributor evaluating a bayi see the applicant's full
+//    track record before signing them, not just this one station.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -59,8 +67,12 @@ export default async function handler(
     }
 
     const license = toLicenseApiShape(licenseRow)
+    const isDistributor = licenseRow.license_type === 'dagitici'
 
-    if (licenseRow.license_type === 'dagitici') {
+    let network: unknown[] | null = null
+    let networkCount: number | null = null
+
+    if (isDistributor) {
       const distributorName = licenseRow.lisans_sahibi_unvani as string
 
       // The real count, from its own head:true query -- PostgREST caps
@@ -76,60 +88,93 @@ export default async function handler(
         .eq('license_type', 'bayilik')
         .eq('dagitim_sirketi', distributorName)
       if (countError) throw countError
+      networkCount = count ?? 0
+
+      if (!countOnly) {
+        const from = (page - 1) * PAGE_SIZE
+        const { data: bayiRows, error: bayiError } = await supabase
+          .from('licenses')
+          .select('*')
+          .eq('market', market)
+          .eq('license_type', 'bayilik')
+          .eq('dagitim_sirketi', distributorName)
+          .order('lisans_sahibi_unvani', { ascending: true })
+          .range(from, from + PAGE_SIZE - 1)
+        if (bayiError) throw bayiError
+        network = (bayiRows ?? []).map(toLicenseApiShape)
+      }
 
       if (countOnly) {
         return res.status(200).json({
           success: true,
-          data: { license, networkCount: count ?? 0, network: null, history: null },
+          data: {
+            license,
+            network: null,
+            networkCount,
+            history: null,
+            relatedLicenses: null,
+            relatedLicensesCount: null,
+          },
         })
       }
-
-      const from = (page - 1) * PAGE_SIZE
-      const { data: bayiRows, error: bayiError } = await supabase
-        .from('licenses')
-        .select('*')
-        .eq('market', market)
-        .eq('license_type', 'bayilik')
-        .eq('dagitim_sirketi', distributorName)
-        .order('lisans_sahibi_unvani', { ascending: true })
-        .range(from, from + PAGE_SIZE - 1)
-
-      if (bayiError) throw bayiError
-
-      const network = (bayiRows ?? []).map(toLicenseApiShape)
-
-      return res.status(200).json({
-        success: true,
-        data: { license, network, networkCount: count ?? network.length, history: null },
-      })
     }
 
-    // Bayilik: reconstruct the full distributor-transfer timeline from
-    // the event log rather than only showing the current dagitim_sirketi
-    // already on the record.
+    // Full lifecycle for this exact license, every event type -- not
+    // just transfers. Applies to both dagitici and bayilik: a
+    // distributor's own status or title can change too.
     const { data: eventRows, error: eventsError } = await supabase
       .from('license_events')
-      .select('old_value, new_value, effective_at')
+      .select('event_type, old_value, new_value, note, effective_at')
       .eq('market', market)
       .eq('lisans_no', lisansNo)
-      .eq('event_type', 'distributor_changed')
       .order('effective_at', { ascending: true })
 
     if (eventsError) throw eventsError
 
-    const history = (eventRows ?? []).map((row) => {
-      const oldValue = row.old_value as Record<string, unknown> | null
-      const newValue = row.new_value as Record<string, unknown> | null
-      return {
-        fromDistributor: oldValue?.dagitim_sirketi ?? null,
-        toDistributor: newValue?.dagitim_sirketi ?? null,
-        effectiveAt: row.effective_at,
-      }
-    })
+    const history = (eventRows ?? []).map((row) => ({
+      eventType: row.event_type,
+      oldValue: row.old_value,
+      newValue: row.new_value,
+      note: row.note,
+      effectiveAt: row.effective_at,
+    }))
+
+    // Cross-reference by tax ID: every other license this same legal
+    // entity holds or has held, anywhere -- the actual "know everything
+    // about this applicant" feature. Skipped if vergi_no is missing
+    // (a handful of withdrawn applications never got one from EPDK).
+    let relatedLicenses: unknown[] | null = null
+    let relatedLicensesCount: number | null = null
+    const vergiNo = licenseRow.vergi_no as string | null
+    if (vergiNo) {
+      const { count: relatedCount, error: relatedCountError } = await supabase
+        .from('licenses')
+        .select('id', { count: 'exact', head: true })
+        .eq('vergi_no', vergiNo)
+        .neq('lisans_no', lisansNo)
+      if (relatedCountError) throw relatedCountError
+      relatedLicensesCount = relatedCount ?? 0
+
+      const { data: relatedRows, error: relatedError } = await supabase
+        .from('licenses')
+        .select('*')
+        .eq('vergi_no', vergiNo)
+        .neq('lisans_no', lisansNo)
+        .limit(200)
+      if (relatedError) throw relatedError
+      relatedLicenses = (relatedRows ?? []).map(toLicenseApiShape)
+    }
 
     return res.status(200).json({
       success: true,
-      data: { license, network: null, networkCount: null, history },
+      data: {
+        license,
+        network,
+        networkCount,
+        history,
+        relatedLicenses,
+        relatedLicensesCount,
+      },
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

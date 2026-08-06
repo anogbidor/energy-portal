@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
-import { useLicenseDetail } from '../hooks/useLicenseDetail'
+import { useLicenseDetail, type HistoryEvent } from '../hooks/useLicenseDetail'
 import type { Market } from '../hooks/useLicenses'
 import LoadingSpinner from '../components/LoadingSpinner'
 import LicenseTable from '../components/LicenseTable'
@@ -14,11 +14,54 @@ const NETWORK_HEADERS = [
   { key: 'ilce', label: 'İlçe' },
 ]
 
+const RELATED_HEADERS = [
+  { key: 'lisansDurumu', label: 'Durum' },
+  { key: 'market', label: 'Piyasa' },
+  { key: 'lisansSahibiUnvani', label: 'Şirketi' },
+  { key: 'lisansNo', label: 'Lisans No' },
+  { key: 'il', label: 'İl' },
+]
+
 const ITEMS_PER_PAGE = 40
 
 function formatDate(value: string | null) {
   if (!value) return '—'
   return new Date(value).toLocaleDateString('tr-TR')
+}
+
+function statusLabel(value: unknown) {
+  if (typeof value !== 'string') return value ?? 'Bilinmiyor'
+  return STATUS_LABELS[value] ?? value
+}
+
+function describeEvent(event: HistoryEvent): { label: string; dotClass: string } {
+  switch (event.eventType) {
+    case 'issued':
+      return { label: 'Lisans verildi', dotClass: 'bg-green-600' }
+    case 'status_changed':
+      return {
+        label: `${statusLabel(event.oldValue?.lisans_durumu)} → ${statusLabel(
+          event.newValue?.lisans_durumu
+        )}`,
+        dotClass: 'bg-amber-500',
+      }
+    case 'unvan_changed':
+      return {
+        label: `Unvan: ${event.oldValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'} → ${
+          event.newValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'
+        }`,
+        dotClass: 'bg-sky-500',
+      }
+    case 'distributor_changed':
+      return {
+        label: `${event.oldValue?.dagitim_sirketi ?? 'Bilinmiyor'} → ${
+          event.newValue?.dagitim_sirketi ?? 'Bilinmiyor'
+        }`,
+        dotClass: 'bg-indigo-600',
+      }
+    default:
+      return { label: 'Diğer güncelleme', dotClass: 'bg-gray-400' }
+  }
 }
 
 export default function LicenseDetail() {
@@ -157,43 +200,86 @@ export default function LicenseDetail() {
             )}
 
             {data.history !== null && (
-              <div className='bg-white border border-gray-200 rounded-xl overflow-hidden'>
+              <div className='bg-white border border-gray-200 rounded-xl overflow-hidden mb-6'>
                 <div className='px-6 py-4 border-b border-gray-200'>
                   <h2 className='text-sm font-semibold text-gray-900'>
-                    Dağıtıcı Geçmişi
+                    Değişiklik Geçmişi
                   </h2>
                   <p className='text-xs text-gray-500 mt-0.5'>
-                    Bu bayinin bağlı olduğu dağıtıcı değişiklikleri, en eskiden
-                    yeniye
+                    Bu lisansta tespit edilen tüm değişiklikler, en yeniden
+                    eskiye
                   </p>
                 </div>
                 {data.history.length === 0 ? (
                   <p className='p-6 text-sm text-gray-500'>
-                    Henüz kayıtlı bir dağıtıcı değişikliği yok
-                    {data.license.dagitimSirketi
-                      ? ` — şu an ${data.license.dagitimSirketi} altında.`
-                      : '.'}
+                    Henüz kayıtlı bir değişiklik yok.
                   </p>
                 ) : (
                   <ol className='p-6 space-y-4'>
-                    {data.history.map((event, i) => (
-                      <li key={i} className='flex items-start gap-3 text-sm'>
-                        <span className='w-2 h-2 mt-1.5 rounded-full bg-indigo-600 flex-shrink-0' />
-                        <div>
-                          <p className='text-gray-900'>
-                            {event.fromDistributor ?? 'Bilinmiyor'}
-                            {' → '}
-                            <span className='font-medium'>
-                              {event.toDistributor ?? 'Bilinmiyor'}
-                            </span>
-                          </p>
-                          <p className='text-xs text-gray-500 mt-0.5'>
-                            {formatDate(event.effectiveAt)}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
+                    {[...data.history]
+                      .reverse()
+                      .map((event, i) => {
+                        const { label, dotClass } = describeEvent(event)
+                        return (
+                          <li key={i} className='flex items-start gap-3 text-sm'>
+                            <span
+                              className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 ${dotClass}`}
+                            />
+                            <div>
+                              <p className='text-gray-900'>{label}</p>
+                              {event.note && (
+                                <p className='text-xs text-gray-500 mt-0.5'>
+                                  {event.note}
+                                </p>
+                              )}
+                              <p className='text-xs text-gray-400 mt-0.5'>
+                                {formatDate(event.effectiveAt)}
+                              </p>
+                            </div>
+                          </li>
+                        )
+                      })}
                   </ol>
+                )}
+              </div>
+            )}
+
+            {data.relatedLicenses !== null && (
+              <div className='bg-white border border-gray-200 rounded-xl overflow-hidden'>
+                <div className='px-6 py-4 border-b border-gray-200'>
+                  <h2 className='text-sm font-semibold text-gray-900'>
+                    Aynı Vergi No'ya Kayıtlı Diğer Lisanslar (
+                    {data.relatedLicensesCount})
+                  </h2>
+                  <p className='text-xs text-gray-500 mt-0.5'>
+                    Bu vergi kimlik numarasına bağlı, tüm piyasalardaki diğer
+                    lisanslar
+                  </p>
+                </div>
+                {data.relatedLicenses.length === 0 ? (
+                  <p className='p-6 text-sm text-gray-500'>
+                    Bu vergi numarasına kayıtlı başka lisans bulunamadı.
+                  </p>
+                ) : (
+                  <div className='p-4'>
+                    <LicenseTable
+                      data={data.relatedLicenses}
+                      tableHeaders={RELATED_HEADERS}
+                      sortConfig={null}
+                      onRequestSort={() => {}}
+                      currentPage={1}
+                      itemsPerPage={data.relatedLicenses.length}
+                      totalItems={data.relatedLicenses.length}
+                      onPageChange={() => {}}
+                      market={market}
+                    />
+                    {(data.relatedLicensesCount ?? 0) > data.relatedLicenses.length && (
+                      <p className='text-xs text-gray-400 mt-2'>
+                        İlk {data.relatedLicenses.length} kayıt gösteriliyor,
+                        toplam {data.relatedLicensesCount}.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )}
