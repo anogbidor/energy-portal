@@ -24,27 +24,18 @@ export const BAYILIK_MARKETS = BAYILIK_SERVICES.map((s) => s.market)
 // EPDK's sustained rate limit turned out to be far stricter than initial
 // testing suggested: a single call could trip a 429 even ~5-10s after the
 // previous one succeeded, and retrying with backoff did not reliably
-// recover within a session. Rather than guess further at the exact safe
-// rate, this processes a small batch of distributors per invocation with
-// a generous gap between calls, and relies on being triggered repeatedly
-// (every few minutes, see .github/workflows/ingest-bayilik.yml) to cycle
-// through the full distributor list over time.
-const BATCH_SIZE = 5
-const DELAY_BETWEEN_CALLS_MS = 20000
-// Real EPDK behavior looks like a quota over a rolling window rather than
-// a simple "wait N seconds between calls" limit: with a perfectly fixed
-// 20s cadence, the same call slot in every batch landed in an empty
-// window and failed 3/5 times, batch after batch (observed during the
-// petrol backfill). A few seconds of random jitter breaks that phase-lock.
-const JITTER_MS = 8000
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function delayWithJitter() {
-  return sleep(DELAY_BETWEEN_CALLS_MS + Math.random() * JITTER_MS)
-}
+// recover within a session. This used to process a 5-distributor batch
+// per invocation with a 20-28s gap between calls, but that made each
+// invocation take 100-140s+ -- fine for GitHub Actions' 280s curl
+// timeout, but well past cron-job.org's 30s max (which is now the only
+// scheduler calling this route). One distributor per invocation instead:
+// no in-process delay needed since there's nothing to wait between, and
+// the external cron schedule itself provides the safe spacing (see
+// ingest-bayilik.yml's / cron-job.org's petrol/lpg minute offsets).
+// Both markets combined are small (32 petrol + 72 lpg distributors as of
+// writing), so even a slower per-call cadence still cycles through the
+// full list well within an hour or two.
+const BATCH_SIZE = 1
 
 export async function runBayilikIngestion(
   onlyMarket?: string
@@ -111,6 +102,16 @@ export async function runBayilikIngestion(
             { dagiticiLisansNo, lisansDurumu: LICENSE_STATUSES },
             1
           )
+
+          // Seen under heavy 429 pressure: the gateway occasionally
+          // returns 200 with a non-array body instead of the expected
+          // list, which used to surface as an opaque "records is not
+          // iterable" from the raw spread below.
+          if (!Array.isArray(records)) {
+            throw new Error(
+              `EPDK gateway returned non-array response: ${JSON.stringify(records)}`
+            )
+          }
           allRecords.push(...records)
 
           // Mark this distributor checked regardless of how many dealers
@@ -127,8 +128,6 @@ export async function runBayilikIngestion(
             error instanceof Error ? error.message : error
           )
         }
-
-        await delayWithJitter()
       }
 
       const result = await ingestLicenses(

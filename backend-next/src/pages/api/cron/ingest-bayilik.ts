@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { runBayilikIngestion } from '@/lib/ingestBayilik'
 
-// Each invocation only processes a small batch of distributors (see
-// ingestBayilik.ts), so this is comfortably under Vercel Hobby's 300s
-// ceiling; 290s is just a safety cap, not an expected duration.
+// Each invocation only makes a single EPDK call now (see
+// ingestBayilik.ts), normally finishing in a few seconds; this is just a
+// generous safety cap in case of a slow upstream response.
 export const config = {
-  maxDuration: 290,
+  maxDuration: 60,
 }
 
 export default async function handler(

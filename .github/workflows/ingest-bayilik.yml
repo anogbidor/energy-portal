@@ -8,26 +8,25 @@ on:
   # for EPDK's rate-limited calls.
   workflow_dispatch: {}
 
-# curl's --max-time below is set just under the API route's own
-# maxDuration (290s, see src/pages/api/cron/ingest-bayilik.ts) --
-# a 5-call batch with jittered 20-28s gaps between calls can take
-# 130-150s+ on its own, so the previous 120s curl timeout was aborting
-# connections (curl exit 28) on batches that were still succeeding
-# server-side, just not being waited for.
+# Each invocation now only processes a single distributor (see
+# ingestBayilik.ts) and normally finishes in a few seconds, so this
+# manual fallback advances the cycle by one distributor per market per
+# run rather than a full batch -- fine for an emergency/manual trigger,
+# since real cycling happens via cron-job.org's per-minute schedule.
 
 jobs:
   ingest-petrol:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger petrol Bayilik batch
+      - name: Trigger petrol Bayilik call
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 280 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 30 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=petrol" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
           cat /tmp/response.json
           if [ "$status" -ge 400 ]; then
-            echo "Petrol Bayilik batch failed"
+            echo "Petrol Bayilik call failed"
             exit 1
           fi
 
@@ -35,14 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: ingest-petrol
     steps:
-      - name: Trigger lpg Bayilik batch
+      - name: Trigger lpg Bayilik call
         run: |
-          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 280 \
+          status=$(curl -s -o /tmp/response.json -w "%{http_code}" --max-time 30 \
             -X GET "https://energy-portal-backend.vercel.app/api/cron/ingest-bayilik?market=lpg" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}")
           echo "HTTP status: $status"
           cat /tmp/response.json
           if [ "$status" -ge 400 ]; then
-            echo "LPG Bayilik batch failed"
+            echo "LPG Bayilik call failed"
             exit 1
           fi
