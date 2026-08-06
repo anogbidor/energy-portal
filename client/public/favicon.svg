@@ -1,10 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect x="0" y="0" width="100" height="100" fill="#ffffff"/>
-  <rect x="10" y="50" width="10" height="10" fill="#fab515" transform="rotate(45 15 55)"/>
-  <rect x="32" y="8" width="13" height="13" fill="#fab515" transform="rotate(45 38.5 14.5)"/>
-  <rect x="54" y="6" width="10" height="10" fill="#fab515"/>
-  <rect x="16" y="28" width="11" height="11" fill="#fab515" transform="rotate(45 21.5 33.5)"/>
-  <path d="M 30 70 A 28 28 0 1 1 76 34" fill="none" stroke="#624b99" stroke-width="10" stroke-linecap="round"/>
-  <polygon points="76,21 89,32 73,41" fill="#624b99"/>
-  <circle cx="55" cy="52" r="21" fill="#624b99"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="329.17 -13.16 100 100">
+  <rect x="329.17" y="-13.16" width="100" height="100" fill="#ffffff"/>
+  <path fill="#fab515" d="M371.65,0h9.12s0,11.97,0,11.97c0,0-5.3-1.37-9.12,0V0Z"/>
+  <path fill="#fab515" d="M399.81,7.56l6.38,6.38-8.63,8.83s-1.77-3.83-6.38-6.57l8.63-8.63Z"/>
+  <path fill="#fab515" d="M346.34,14.13l6.57-6.57,8.44,8.44s-4.71,3.92-6.18,6.77l-8.83-8.63Z"/>
+  <path fill="#fab515" d="M338.59,32.77h12.46s-1.47,6.97,0,9.42h-12.46s0-9.42,0-9.42Z"/>
+  <ellipse fill="#624b99" cx="376.55" cy="37.3" rx="14.63" ry="14.54"/>
+  <path fill="#624b99" d="M406.68,21.88l-12.46,21.88h7.46s-2.45,13.15-17.56,18.64c0,0-16.78,6.08-29.14-10.01l-7.06,7.16s12.36,17.56,35.32,13.54c0,0,23.35-3.53,28.75-29.34l7.75.2-13.05-22.08Z"/>
 </svg>
