@@ -17,7 +17,6 @@ import {
 import StationTable from '../components/StationTable'
 import StationCard from '../components/StationCard'
 import { useStations } from '../hooks/useStations'
-import LoadingSpinner from '../components/LoadingSpinner'
 
 const cities = ['İstanbul', 'Ankara', 'İzmir']
 
@@ -162,9 +161,7 @@ export default function StationsPage() {
             </h1>
             <div className='text-sm text-gray-500 mt-1'>
               {loading ? (
-                <span className='inline-flex items-center gap-2'>
-                  <LoadingSpinner /> Yükleniyor...
-                </span>
+                <span className='inline-block h-3.5 w-24 bg-gray-100 rounded animate-pulse' />
               ) : (
                 `${filteredStations.length} istasyon bulundu`
               )}
@@ -414,8 +411,15 @@ export default function StationsPage() {
 
         {/* Results Section */}
         {loading ? (
-          <div className='flex justify-center py-12 bg-white rounded-xl border border-gray-200'>
-            <LoadingSpinner />
+          <div className='bg-white rounded-xl border border-gray-200 p-4'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse'>
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className='h-32 rounded-lg border border-gray-100 bg-gray-50'
+                />
+              ))}
+            </div>
           </div>
         ) : filteredStations.length > 0 ? (
           viewMode === 'table' ? (

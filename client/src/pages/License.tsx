@@ -3,7 +3,6 @@ import React from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useLicenses, type Market } from '../hooks/useLicenses' // Import Market type
 import LicenseTable from '../components/LicenseTable'
-import LoadingSpinner from '../components/LoadingSpinner'
 import type { LicenseItem } from '../hooks/useLicenses'
 import { STATUS_LABELS } from '../lib/licenseStatus'
 import { fetchNetworkCount } from '../hooks/useLicenseDetail'
@@ -295,8 +294,28 @@ export default function LicensesPage() {
 
       <section>
         {loading ? (
-          <div className='flex justify-center items-center py-12'>
-            <LoadingSpinner />
+          <div className='animate-pulse'>
+            <div className='bg-white border border-gray-200 rounded-lg p-4 mb-4'>
+              <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3'>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i}>
+                    <div className='h-2.5 w-16 bg-gray-100 rounded mb-1.5' />
+                    <div className='h-8 bg-gray-100 rounded-md' />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className='border border-gray-200 rounded-lg overflow-hidden'>
+              <div className='h-9 bg-gray-50 border-b border-gray-200' />
+              {[...Array(10)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-10 border-b border-gray-100 last:border-b-0 ${
+                    i % 2 === 1 ? 'bg-gray-50/50' : 'bg-white'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         ) : error ? (
           <div className='bg-red-50 border-l-4 border-red-500 p-4 mb-6'>

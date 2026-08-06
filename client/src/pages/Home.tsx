@@ -8,7 +8,6 @@ import {
 } from '@heroicons/react/24/outline'
 import Hero from '../components/Hero'
 import { useNewsFeed } from '../hooks/useNewsFeed'
-import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import MarketsSideBar from '../components/MarketsSideBar'
 import LicenseSummaryTable from '../components/LicenseSummaryTable'
@@ -71,11 +70,15 @@ export default function Home() {
               </div>
 
               {loading ? (
-                <div className='flex flex-col items-center py-12'>
-                  <LoadingSpinner />
-                  <div className='text-gray-500 text-sm mt-2'>
-                    Veriler yükleniyor
+                <div className='bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200 animate-pulse'>
+                  <div className='flex items-center justify-between mb-3'>
+                    <div className='h-3 w-20 bg-gray-200 rounded' />
+                    <div className='h-3 w-16 bg-gray-200 rounded' />
                   </div>
+                  <div className='h-6 w-3/4 bg-gray-200 rounded mb-3' />
+                  <div className='h-3.5 w-full bg-gray-200 rounded mb-2' />
+                  <div className='h-3.5 w-2/3 bg-gray-200 rounded mb-4' />
+                  <div className='h-3.5 w-24 bg-gray-200 rounded' />
                 </div>
               ) : error ? (
                 <ErrorMessage message={error} />

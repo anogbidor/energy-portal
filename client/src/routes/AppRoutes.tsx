@@ -6,7 +6,6 @@ import News from '../pages/News'
 import Prices from '../pages/Prices'
 import License from '../pages/License'
 import LicenseDetail from '../pages/LicenseDetail'
-import LoadingSpinner from '../components/LoadingSpinner'
 
 // Stations pulls in @react-google-maps/api, the single largest dependency
 // in the bundle -- lazy-loading it keeps that weight out of every other
@@ -23,8 +22,20 @@ const AppRoutes = () => (
       element={
         <Suspense
           fallback={
-            <div className='flex justify-center items-center py-24'>
-              <LoadingSpinner />
+            <div className='bg-gray-50 min-h-screen'>
+              <div className='max-w-7xl mx-auto px-4 sm:px-6 py-10'>
+                <div className='animate-pulse'>
+                  <div className='h-7 w-56 bg-gray-200 rounded mb-8' />
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                    {[...Array(6)].map((_, i) => (
+                      <div
+                        key={i}
+                        className='h-32 rounded-lg border border-gray-200 bg-white'
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           }
         >
