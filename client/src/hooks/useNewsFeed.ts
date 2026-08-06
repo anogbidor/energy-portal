@@ -27,55 +27,80 @@ interface RssItem {
   thumbnail?: string
 }
 
+// Both Home and News independently call this hook -- without a shared
+// cache, navigating between them (or back to either) re-hits the
+// external RSS proxy and re-shows a loading state every single time,
+// even though the feed only changes a few times a day at most.
+let cache: NewsItem[] | null = null
+let inFlight: Promise<NewsItem[]> | null = null
+
+async function fetchNewsFeed(): Promise<NewsItem[]> {
+  if (inFlight) return inFlight
+
+  inFlight = (async () => {
+    const rssResponse = await fetch(
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
+        'https://rss.app/feeds/PyqkAjCkWNmw1ejj.xml'
+      )}`
+    )
+
+    if (!rssResponse.ok) {
+      throw new Error(`RSS feed error (${rssResponse.status})`)
+    }
+
+    const rssData = await rssResponse.json()
+
+    if (rssData.status !== 'ok') {
+      throw new Error(rssData.message || 'Invalid RSS feed')
+    }
+
+    const transformedNews = rssData.items.map((item: RssItem) => ({
+      title: item.title || 'Başlıksız Haber',
+      date:
+        formatRssDate(item.pubDate) || new Date().toLocaleDateString('tr-TR'),
+      category: item.categories?.[0] || 'Genel',
+      excerpt:
+        stripHtml(item.description).substring(0, 200) + '...' ||
+        'Açıklama yok',
+      link: item.link || '#',
+      imageUrl: getImageUrl(item),
+    }))
+
+    cache = transformedNews
+    return transformedNews
+  })()
+
+  try {
+    return await inFlight
+  } finally {
+    inFlight = null
+  }
+}
+
 export function useNewsFeed(): UseNewsFeedResult {
-  const [news, setNews] = useState<NewsItem[] | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [news, setNews] = useState<NewsItem[] | null>(cache)
+  const [loading, setLoading] = useState(!cache)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        // First fetch from RSS.app feed
-        const rssResponse = await fetch(
-          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-            'https://rss.app/feeds/PyqkAjCkWNmw1ejj.xml'
-          )}`
-        )
-
-        if (!rssResponse.ok) {
-          throw new Error(`RSS feed error (${rssResponse.status})`)
-        }
-
-        const rssData = await rssResponse.json()
-
-        if (rssData.status !== 'ok') {
-          throw new Error(rssData.message || 'Invalid RSS feed')
-        }
-
-        // Transform the RSS data to match your NewsItem interface
-        const transformedNews = rssData.items.map((item: RssItem) => ({
-          title: item.title || 'Başlıksız Haber',
-          date:
-            formatRssDate(item.pubDate) ||
-            new Date().toLocaleDateString('tr-TR'),
-          category: item.categories?.[0] || 'Genel',
-          excerpt:
-            stripHtml(item.description).substring(0, 200) + '...' ||
-            'Açıklama yok',
-          link: item.link || '#',
-          imageUrl: getImageUrl(item), // Extract image from enclosure or thumbnail
-        }))
-
-        setNews(transformedNews)
-      } catch (err) {
+    let cancelled = false
+    fetchNewsFeed()
+      .then((items) => {
+        if (cancelled) return
+        setNews(items)
+      })
+      .catch((err) => {
+        if (cancelled) return
         console.error('❌ Haber alınamadı:', err)
-        setError(err instanceof Error ? err.message : 'Bilinmeyen hata')
-      } finally {
+        if (!cache) setError(err instanceof Error ? err.message : 'Bilinmeyen hata')
+      })
+      .finally(() => {
+        if (cancelled) return
         setLoading(false)
-      }
+      })
+    return () => {
+      cancelled = true
     }
-
-    fetchNews()
   }, [])
 
   return { news, loading, error }
