@@ -9,9 +9,11 @@ export default async function handler(
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
+  const market = req.query.market === 'lpg' ? 'lpg' : 'petrol'
+
   try {
-    const result = await snapshotPrices()
-    return res.status(200).json({ success: true, ...result })
+    const result = await snapshotPrices(market)
+    return res.status(200).json({ success: true, market, ...result })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     return res.status(500).json({ success: false, error: message })
