@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLicenseSummary } from '../hooks/useLicenseSummary'
 
@@ -8,6 +9,10 @@ const MARKET_COLUMNS: { key: 'petrol' | 'lpg' | 'dogalgaz' | 'elektrik'; label: 
   { key: 'elektrik', label: 'Elektrik' },
 ]
 
+const INITIAL_DAYS = 14
+const DAYS_STEP = 14
+const MAX_DAYS = 60
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString('tr-TR', {
     day: '2-digit',
@@ -17,14 +22,15 @@ function formatDate(value: string) {
 }
 
 export default function LicenseSummaryTable() {
-  const { data, loading, error } = useLicenseSummary(14)
+  const [days, setDays] = useState(INITIAL_DAYS)
+  const { data, loading, error } = useLicenseSummary(days)
 
   return (
     <div className='bg-white rounded-xl border border-gray-200 overflow-hidden'>
       <div className='px-5 py-4 border-b border-gray-200'>
         <h2 className='text-sm font-semibold text-gray-900'>Lisans Takvimi</h2>
         <p className='text-xs text-gray-500 mt-0.5'>
-          Son 14 günde piyasa bazlı verilen lisans sayıları — bir tarihe
+          Son {days} günde piyasa bazlı verilen lisans sayıları — bir tarihe
           tıklayarak detayları görüntüleyin
         </p>
       </div>
@@ -100,6 +106,21 @@ export default function LicenseSummaryTable() {
               })}
             </tbody>
           </table>
+
+          {days < MAX_DAYS && (
+            <div className='px-5 py-3 border-t border-gray-100 text-center'>
+              <button
+                type='button'
+                onClick={() =>
+                  setDays((d) => Math.min(d + DAYS_STEP, MAX_DAYS))
+                }
+                disabled={loading}
+                className='text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 transition-colors'
+              >
+                Daha fazla göster
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

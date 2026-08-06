@@ -43,7 +43,10 @@ export default function Home() {
       <Hero />
 
       <section className='py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto'>
-        <div className='flex flex-col lg:flex-row gap-6'>
+        {/* License Summary Table */}
+        <LicenseSummaryTable />
+
+        <div className='flex flex-col lg:flex-row gap-6 mt-6'>
           {/* Left Sidebar - Piyasalar - Hidden on mobile */}
           <div className='hidden lg:block lg:w-72 flex-shrink-0 order-first'>
             <MarketsSideBar />
@@ -168,11 +171,6 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div>
-
-        {/* License Summary Table */}
-        <div className='mt-6'>
-          <LicenseSummaryTable />
         </div>
       </section>
     </div>

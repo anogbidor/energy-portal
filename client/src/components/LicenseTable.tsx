@@ -74,7 +74,7 @@ export default function LicenseTable({
                 ))}
               </tr>
             </thead>
-            <tbody className='divide-y divide-gray-200 bg-white'>
+            <tbody className='divide-y divide-gray-100 bg-white'>
               {data.length > 0 ? (
                 data.map((item, i) => {
                   const statusLabel = displayStatus(item.lisansDurumu)
@@ -82,66 +82,70 @@ export default function LicenseTable({
                   const badgeColorClass = (() => {
                     switch (statusLabel) {
                       case 'Yürürlükte':
-                        return 'bg-green-100 text-green-800'
+                        return 'bg-green-50 text-green-700'
                       case 'Faaliyeti Geçici Durduruldu':
-                        return 'bg-yellow-100 text-yellow-800'
+                        return 'bg-amber-50 text-amber-700'
                       case 'İptal Edildi':
-                        return 'bg-red-100 text-red-900'
+                        return 'bg-red-50 text-red-700'
                       case 'Süresi Doldu':
-                        return 'bg-purple-100 text-purple-800'
+                        return 'bg-purple-50 text-purple-700'
                       case 'Sonlandırıldı':
-                        return 'bg-gray-100 text-gray-800'
+                        return 'bg-gray-100 text-gray-600'
                       default:
-                        return 'bg-gray-100 text-gray-800'
+                        return 'bg-gray-100 text-gray-600'
                     }
                   })()
 
                   return (
                     <tr
                       key={`${item.lisansNo}-${i}`}
-                      className='hover:bg-gray-50'
+                      className={`hover:bg-gray-50 transition-colors ${
+                        i % 2 === 1 ? 'bg-gray-50/50' : ''
+                      }`}
                     >
-                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs'>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeColorClass}`}
                         >
                           {statusLabel}
                         </span>
                       </td>
-                      <td className='px-3 py-2 text-xs text-gray-500'>
+                      <td className='px-3 py-2.5 text-xs font-medium text-gray-900'>
                         {item.lisansSahibiUnvani}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2 text-xs font-medium text-gray-900'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {item.lisansNo}
                       </td>
-                      <td className='px-3 py-2 text-xs text-gray-500'>
-                        {item.lisansSahibiUnvani}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {item.vergiNo}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {new Date(item.baslangicTarihi).toLocaleDateString(
                           'tr-TR'
                         )}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {new Date(item.bitisTarihi).toLocaleDateString('tr-TR')}
                       </td>
-                      <td className='px-3 py-2 text-xs text-gray-500'>
-                        {item.adres || '-'}
-                      </td>
-                      <td className='px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {item.il || '-'}
                       </td>
-                      <td className='px-3 py-2 text-xs text-gray-500'>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {item.ilce || '-'}
                       </td>
-                      <td className='whitespace-nowrap px-3 py-2 text-xs text-gray-500'>
+                      <td className='px-3 py-2.5 text-xs text-gray-500 max-w-xs'>
+                        {item.adres || '-'}
+                      </td>
+                      <td className='whitespace-nowrap px-3 py-2.5 text-xs text-gray-500'>
                         {item.iptalSonaErdirmeTarihi ? (
                           new Date(item.iptalSonaErdirmeTarihi).toLocaleDateString('tr-TR')
                         ) : (
-                          <span className='text-gray-400'>-</span>
+                          <span className='text-gray-300'>-</span>
+                        )}
+                      </td>
+                      <td className='px-3 py-2.5 text-xs text-gray-500 max-w-xs'>
+                        {item.iptalSonaErdimeAciklama || (
+                          <span className='text-gray-300'>-</span>
                         )}
                       </td>
                     </tr>

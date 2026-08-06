@@ -12,14 +12,14 @@ const TABLE_HEADERS = [
   { key: 'lisansDurumu', label: 'EPDK Lisans Durumu' },
   { key: 'lisansSahibiUnvani', label: 'Şirketi' },
   { key: 'lisansNo', label: 'Lisans No' },
-  { key: 'unvan', label: 'Unvan' },
   { key: 'vergiNo', label: 'Vergi No' },
   { key: 'baslangicTarihi', label: 'Başlangıç Tarihi' },
   { key: 'bitisTarihi', label: 'Bitiş Tarihi' },
-  { key: 'adres', label: 'Adres' },
   { key: 'il', label: 'İl' },
   { key: 'ilce', label: 'İlçe' },
+  { key: 'adres', label: 'Adres' },
   { key: 'iptalTarihi', label: 'İptal Tarihi' },
+  { key: 'iptalAciklama', label: 'İptal Açıklaması' },
 ]
 
 const ITEMS_PER_PAGE = 40
@@ -91,7 +91,6 @@ export default function LicensesPage() {
       case 'lisansDurumu':
         return info.lisansDurumu
       case 'lisansSahibiUnvani':
-      case 'unvan':
         return info.lisansSahibiUnvani
       case 'lisansNo':
         return info.lisansNo
@@ -111,6 +110,8 @@ export default function LicensesPage() {
         return info.iptalSonaErdirmeTarihi
           ? new Date(info.iptalSonaErdirmeTarihi).getTime()
           : 0
+      case 'iptalAciklama':
+        return info.iptalSonaErdimeAciklama || ''
       default:
         return ''
     }
