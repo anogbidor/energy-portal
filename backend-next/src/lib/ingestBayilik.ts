@@ -31,9 +31,19 @@ export const BAYILIK_MARKETS = BAYILIK_SERVICES.map((s) => s.market)
 // through the full distributor list over time.
 const BATCH_SIZE = 5
 const DELAY_BETWEEN_CALLS_MS = 20000
+// Real EPDK behavior looks like a quota over a rolling window rather than
+// a simple "wait N seconds between calls" limit: with a perfectly fixed
+// 20s cadence, the same call slot in every batch landed in an empty
+// window and failed 3/5 times, batch after batch (observed during the
+// petrol backfill). A few seconds of random jitter breaks that phase-lock.
+const JITTER_MS = 8000
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function delayWithJitter() {
+  return sleep(DELAY_BETWEEN_CALLS_MS + Math.random() * JITTER_MS)
 }
 
 export async function runBayilikIngestion(
@@ -118,7 +128,7 @@ export async function runBayilikIngestion(
           )
         }
 
-        await sleep(DELAY_BETWEEN_CALLS_MS)
+        await delayWithJitter()
       }
 
       const result = await ingestLicenses(
