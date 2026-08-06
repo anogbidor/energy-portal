@@ -4,6 +4,8 @@
 // stable regardless of the underlying DB schema.
 export function toLicenseApiShape(row: Record<string, unknown>) {
   return {
+    market: row.market,
+    licenseType: row.license_type,
     lisansNo: row.lisans_no,
     lisansDurumu: row.lisans_durumu,
     lisansSahibiUnvani: row.lisans_sahibi_unvani,
