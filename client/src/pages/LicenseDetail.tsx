@@ -164,6 +164,22 @@ export default function LicenseDetail() {
                     </dd>
                   </div>
                 )}
+                {data.license.iptalSonaErdirmeTarihi && (
+                  <div>
+                    <dt className='text-gray-500 text-xs'>İptal/Sona Erme Tarihi</dt>
+                    <dd className='text-gray-900 mt-0.5'>
+                      {formatDate(data.license.iptalSonaErdirmeTarihi)}
+                    </dd>
+                  </div>
+                )}
+                {data.license.iptalSonaErdimeAciklama && (
+                  <div className='col-span-2 sm:col-span-4'>
+                    <dt className='text-gray-500 text-xs'>İptal Açıklaması</dt>
+                    <dd className='text-gray-900 mt-0.5'>
+                      {data.license.iptalSonaErdimeAciklama}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
 
