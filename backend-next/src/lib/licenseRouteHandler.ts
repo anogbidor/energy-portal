@@ -28,10 +28,12 @@ export function createLicenseRoute(market: string) {
 
       if (date) {
         // Date-filtered drill-down (from the homepage summary table)
-        // includes every license type issued that day -- the summary
-        // counts this backs are aggregated across dagitici AND bayilik,
-        // so the detail view has to match or it'd show fewer/zero rows.
-        query = query.eq('baslangic_tarihi', date)
+        // includes every license type issued OR cancelled that day --
+        // the summary counts this backs track issuance and cancellation
+        // as separate activity per license (see license-summary.ts), so
+        // the detail view has to match both or cancellations would 404
+        // into an empty table.
+        query = query.or(`baslangic_tarihi.eq.${date},iptal_tarihi.eq.${date}`)
       } else {
         // Default (no date): the existing /license page's per-market tabs,
         // which have only ever shown distributor-level licenses.

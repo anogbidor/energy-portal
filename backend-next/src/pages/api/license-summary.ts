@@ -8,11 +8,15 @@ const MARKETS = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
 const DEFAULT_DAYS = 14
 const MAX_DAYS = 60
 
-// Calendar-style summary: one row per date, one count per market, for the
-// homepage's day-by-day overview (click a date to drill into that day's
-// actual licenses via /license?market=X&date=Y). Aggregated in code
-// rather than a SQL view/RPC, since it only needs 2 narrow columns over a
-// bounded recent window.
+// Calendar-style summary: one row per date, one { issued, cancelled }
+// pair per market, for the homepage's day-by-day overview (click a date
+// to drill into that day's actual licenses via /license?market=X&date=Y).
+// Grouping only by baslangic_tarihi (issuance date) made every single
+// cancellation invisible -- a license cancelled today keeps the
+// baslangic_tarihi from whenever it was originally issued, often months
+// or years back, so it would never land in a "last N days" window keyed
+// on that field alone. This tracks both the issuance date and the
+// cancellation date (iptal_tarihi) as separate activity per license.
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
@@ -31,26 +35,38 @@ export default async function handler(
 
   const since = new Date()
   since.setDate(since.getDate() - days)
+  const sinceStr = since.toISOString().slice(0, 10)
 
   try {
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
       .from('licenses')
-      .select('market, baslangic_tarihi')
-      .gte('baslangic_tarihi', since.toISOString().slice(0, 10))
-      .not('baslangic_tarihi', 'is', null)
+      .select('market, baslangic_tarihi, iptal_tarihi')
+      .or(`baslangic_tarihi.gte.${sinceStr},iptal_tarihi.gte.${sinceStr}`)
 
     if (error) throw error
 
-    const counts = new Map<string, Record<string, number>>()
-    for (const row of data ?? []) {
-      const date = row.baslangic_tarihi as string
-      const market = row.market as string
-      if (!counts.has(date)) {
-        counts.set(date, Object.fromEntries(MARKETS.map((m) => [m, 0])))
-      }
+    const emptyDayCounts = () =>
+      Object.fromEntries(
+        MARKETS.map((m) => [m, { issued: 0, cancelled: 0 }])
+      ) as Record<string, { issued: number; cancelled: number }>
+
+    const counts = new Map<string, Record<string, { issued: number; cancelled: number }>>()
+
+    const bump = (date: string, market: string, key: 'issued' | 'cancelled') => {
+      if (!counts.has(date)) counts.set(date, emptyDayCounts())
       const dayCounts = counts.get(date)!
-      dayCounts[market] = (dayCounts[market] ?? 0) + 1
+      if (!dayCounts[market]) dayCounts[market] = { issued: 0, cancelled: 0 }
+      dayCounts[market][key] += 1
+    }
+
+    for (const row of data ?? []) {
+      const market = row.market as string
+      const baslangic = row.baslangic_tarihi as string | null
+      const iptal = row.iptal_tarihi as string | null
+
+      if (baslangic && baslangic >= sinceStr) bump(baslangic, market, 'issued')
+      if (iptal && iptal >= sinceStr) bump(iptal, market, 'cancelled')
     }
 
     const summary = Array.from(counts.entries())

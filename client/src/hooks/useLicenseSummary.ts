@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 
+export interface MarketActivity {
+  issued: number
+  cancelled: number
+}
+
 export interface LicenseSummaryDay {
   date: string
   counts: {
-    petrol: number
-    lpg: number
-    dogalgaz: number
-    elektrik: number
+    petrol: MarketActivity
+    lpg: MarketActivity
+    dogalgaz: MarketActivity
+    elektrik: MarketActivity
   }
 }
 

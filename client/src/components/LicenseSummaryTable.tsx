@@ -30,9 +30,17 @@ export default function LicenseSummaryTable() {
       <div className='px-5 py-4 border-b border-gray-200'>
         <h2 className='text-sm font-semibold text-gray-900'>Lisans Takvimi</h2>
         <p className='text-xs text-gray-500 mt-0.5'>
-          Son {days} günde piyasa bazlı verilen lisans sayıları — bir tarihe
-          tıklayarak detayları görüntüleyin
+          Son {days} günde piyasa bazlı verilen ve iptal edilen lisans
+          sayıları — bir tarihe tıklayarak detayları görüntüleyin
         </p>
+        <div className='flex items-center gap-3 mt-2 text-[11px] text-gray-500'>
+          <span className='inline-flex items-center gap-1'>
+            <span className='w-2 h-2 rounded-full bg-green-500' /> Verilen
+          </span>
+          <span className='inline-flex items-center gap-1'>
+            <span className='w-2 h-2 rounded-full bg-red-500' /> İptal Edilen
+          </span>
+        </div>
       </div>
 
       {loading ? (
@@ -72,8 +80,12 @@ export default function LicenseSummaryTable() {
             </thead>
             <tbody className='divide-y divide-gray-100'>
               {data.map((day) => {
-                const total = MARKET_COLUMNS.reduce(
-                  (sum, col) => sum + (day.counts[col.key] ?? 0),
+                const totalIssued = MARKET_COLUMNS.reduce(
+                  (sum, col) => sum + (day.counts[col.key]?.issued ?? 0),
+                  0
+                )
+                const totalCancelled = MARKET_COLUMNS.reduce(
+                  (sum, col) => sum + (day.counts[col.key]?.cancelled ?? 0),
                   0
                 )
                 return (
@@ -82,24 +94,50 @@ export default function LicenseSummaryTable() {
                       {formatDate(day.date)}
                     </td>
                     {MARKET_COLUMNS.map((col) => {
-                      const count = day.counts[col.key] ?? 0
-                      return (
-                        <td key={col.key} className='px-4 py-2.5 text-center'>
-                          {count > 0 ? (
-                            <Link
-                              to={`/license?market=${col.key}&date=${day.date}`}
-                              className='inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors'
-                            >
-                              {count}
-                            </Link>
-                          ) : (
+                      const { issued, cancelled } = day.counts[col.key] ?? {
+                        issued: 0,
+                        cancelled: 0,
+                      }
+                      if (issued === 0 && cancelled === 0) {
+                        return (
+                          <td key={col.key} className='px-4 py-2.5 text-center'>
                             <span className='text-gray-300 text-xs'>—</span>
-                          )}
+                          </td>
+                        )
+                      }
+                      return (
+                        <td key={col.key} className='px-4 py-2.5'>
+                          <div className='flex items-center justify-center gap-1'>
+                            {issued > 0 && (
+                              <Link
+                                to={`/license?market=${col.key}&date=${day.date}`}
+                                className='inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors'
+                                title='Verilen lisanslar'
+                              >
+                                +{issued}
+                              </Link>
+                            )}
+                            {cancelled > 0 && (
+                              <Link
+                                to={`/license?market=${col.key}&date=${day.date}`}
+                                className='inline-flex items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition-colors'
+                                title='İptal edilen lisanslar'
+                              >
+                                -{cancelled}
+                              </Link>
+                            )}
+                          </div>
                         </td>
                       )
                     })}
-                    <td className='px-4 py-2.5 text-center text-sm font-medium text-gray-900'>
-                      {total}
+                    <td className='px-4 py-2.5 text-center text-sm font-medium text-gray-900 whitespace-nowrap'>
+                      {totalIssued > 0 && (
+                        <span className='text-green-700'>+{totalIssued}</span>
+                      )}
+                      {totalIssued > 0 && totalCancelled > 0 && ' / '}
+                      {totalCancelled > 0 && (
+                        <span className='text-red-700'>-{totalCancelled}</span>
+                      )}
                     </td>
                   </tr>
                 )
