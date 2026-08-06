@@ -20,14 +20,25 @@ export function createLicenseRoute(market: string) {
       return res.status(200).end()
     }
 
+    const date = typeof req.query.date === 'string' ? req.query.date : undefined
+
     try {
       const supabase = getSupabaseAdmin()
-      const { data, error } = await supabase
-        .from('licenses')
-        .select('*')
-        .eq('market', market)
-        .eq('license_type', 'dagitici')
+      let query = supabase.from('licenses').select('*').eq('market', market)
 
+      if (date) {
+        // Date-filtered drill-down (from the homepage summary table)
+        // includes every license type issued that day -- the summary
+        // counts this backs are aggregated across dagitici AND bayilik,
+        // so the detail view has to match or it'd show fewer/zero rows.
+        query = query.eq('baslangic_tarihi', date)
+      } else {
+        // Default (no date): the existing /license page's per-market tabs,
+        // which have only ever shown distributor-level licenses.
+        query = query.eq('license_type', 'dagitici')
+      }
+
+      const { data, error } = await query
       if (error) throw error
 
       return res.status(200).json({

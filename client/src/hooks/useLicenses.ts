@@ -35,7 +35,10 @@ interface UseLicensesResult {
   setMarket: (market: Market) => void
 }
 
-export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
+export function useLicenses(
+  initialMarket: Market = 'lpg',
+  date?: string
+): UseLicensesResult {
   const [market, setMarket] = useState<Market>(initialMarket)
   const [data, setData] = useState<LicenseItem[] | null>(null)
   const [error, setError] = useState<string>()
@@ -48,7 +51,10 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
       setData(null)
 
       try {
-        const res = await fetch(endpoints[market])
+        const url = date
+          ? `${endpoints[market]}?date=${encodeURIComponent(date)}`
+          : endpoints[market]
+        const res = await fetch(url)
         const json = await res.json()
 
         if (!json.success) {
@@ -64,7 +70,7 @@ export function useLicenses(initialMarket: Market = 'lpg'): UseLicensesResult {
     }
 
     fetchLicenses()
-  }, [market])
+  }, [market, date])
 
   return { data, error, loading, setMarket }
 }

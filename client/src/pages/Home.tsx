@@ -11,7 +11,7 @@ import { useNewsFeed } from '../hooks/useNewsFeed'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
 import MarketsSideBar from '../components/MarketsSideBar'
-import LicenseMovementsTable from '../components/LicenseMovementsTable'
+import LicenseSummaryTable from '../components/LicenseSummaryTable'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
@@ -170,9 +170,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* License Movements Table */}
+        {/* License Summary Table */}
         <div className='mt-6'>
-          <LicenseMovementsTable />
+          <LicenseSummaryTable />
         </div>
       </section>
     </div>

@@ -1,5 +1,6 @@
 // src/pages/LicensesPage.tsx
 import React from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useLicenses, type Market } from '../hooks/useLicenses' // Import Market type
 import LicenseTable from '../components/LicenseTable'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -23,9 +24,22 @@ const TABLE_HEADERS = [
 
 const ITEMS_PER_PAGE = 40
 
+function isMarket(value: string | null): value is Market {
+  return !!value && (MARKET_TYPES as string[]).includes(value)
+}
+
 export default function LicensesPage() {
-  const { data, error, loading, setMarket } = useLicenses('lpg')
-  const [activeMarket, setActiveMarket] = React.useState<Market>('lpg')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlMarket = searchParams.get('market')
+  const urlDate = searchParams.get('date') || undefined
+  const initialMarket = isMarket(urlMarket) ? urlMarket : 'lpg'
+
+  const { data, error, loading, setMarket } = useLicenses(
+    initialMarket,
+    urlDate
+  )
+  const [activeMarket, setActiveMarket] =
+    React.useState<Market>(initialMarket)
   const [searchTerm, setSearchTerm] = React.useState('')
   const [sortConfig, setSortConfig] = React.useState<{
     key: string
@@ -33,13 +47,25 @@ export default function LicensesPage() {
   } | null>(null)
   const [currentPage, setCurrentPage] = React.useState(1)
 
-  // When market changes, reset filters and pagination
+  // When market changes, reset filters and pagination. The date filter (if
+  // any came in via URL, e.g. drilling down from the homepage summary
+  // table) stays applied so switching markets shows that same date's
+  // activity in the newly selected market.
   const handleMarketChange = (market: Market) => {
     setMarket(market)
     setActiveMarket(market)
     setCurrentPage(1)
     setSearchTerm('')
     setSortConfig(null)
+    const next = new URLSearchParams(searchParams)
+    next.set('market', market)
+    setSearchParams(next, { replace: true })
+  }
+
+  const clearDateFilter = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('date')
+    setSearchParams(next, { replace: true })
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,6 +179,22 @@ export default function LicensesPage() {
           Enerji Piyasası Düzenleme Kurumu lisans bilgileri
         </p>
       </header>
+
+      {urlDate && (
+        <div className='mb-6 flex items-center justify-center gap-3 text-sm'>
+          <span className='inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-1.5 rounded-full'>
+            {new Date(urlDate).toLocaleDateString('tr-TR')} tarihli lisanslar
+            <button
+              type='button'
+              onClick={clearDateFilter}
+              className='text-gray-300 hover:text-white'
+              aria-label='Tarih filtresini kaldır'
+            >
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
 
       <nav className='mb-8'>
         <div className='flex justify-center gap-1 bg-white border border-gray-200 p-1 rounded-full max-w-md mx-auto'>
