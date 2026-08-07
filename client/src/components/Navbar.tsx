@@ -13,10 +13,10 @@ import { useState } from 'react'
 
 const navItems = [
   { path: '/', name: 'Anasayfa', icon: HomeIcon },
-  { path: '/news', name: 'Haberler', icon: NewspaperIcon },
+  { path: '/license', name: 'Lisanslar', icon: DocumentChartBarIcon },
   { path: '/prices', name: 'Fiyatlar', icon: CurrencyDollarIcon },
   { path: '/stations', name: 'İstasyonlar', icon: MapPinIcon },
-  { path: '/license', name: 'Lisanslar', icon: DocumentChartBarIcon },
+  { path: '/news', name: 'Haberler', icon: NewspaperIcon },
 ]
 
 export default function Navbar() {
