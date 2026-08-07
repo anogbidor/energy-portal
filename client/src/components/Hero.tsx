@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
-import { useLiveData } from '../hooks/useLiveData'
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/solid'
+import { useLiveData, type Trend } from '../hooks/useLiveData'
 import { useLicenseSummary } from '../hooks/useLicenseSummary'
 
-type Stat = { name: string; value: number | null | undefined; unit: string }
-type Slide = { heading: string; subheading: string; stats: Stat[] }
+type Stat = {
+  name: string
+  value: number | null | undefined
+  unit: string
+  trend?: Trend
+}
+type Slide = { heading: string; subheading: string; stats: Stat[]; image: string }
 
 // Tailwind's build-time scanner needs literal class strings, not a
 // template literal like `md:grid-cols-${n}` -- this covers the two
@@ -15,6 +21,12 @@ const GRID_COLS: Record<number, string> = {
 }
 
 const SLIDE_INTERVAL_MS = 6000
+
+function TrendArrow({ trend }: { trend?: Trend }) {
+  if (trend === 'up') return <ArrowTrendingUpIcon className='h-4 w-4 text-green-600' />
+  if (trend === 'down') return <ArrowTrendingDownIcon className='h-4 w-4 text-red-600' />
+  return null
+}
 
 export default function Hero() {
   const { data, loading: liveLoading, error } = useLiveData()
@@ -52,26 +64,30 @@ export default function Hero() {
       heading: 'Enerji ve Lisans Piyasaları',
       subheading:
         'EPDK lisans hareketleri, akaryakıt fiyatları ve döviz kurları — tek bir yerde.',
+      image: 'https://images.pexels.com/photos/34058522/pexels-photo-34058522.jpeg',
       stats: [
         { name: 'Benzin (95 Oktan)', value: benzin?.fiyat, unit: '₺/L' },
         { name: 'Motorin', value: motorin?.fiyat, unit: '₺/L' },
         { name: 'Otogaz (LPG)', value: otogaz?.fiyat, unit: '₺/L' },
-        { name: 'USD/TRY', value: data?.usdTry, unit: '₺' },
+        { name: 'USD/TRY', value: data?.usdTry, unit: '₺', trend: data?.trends.usdTry },
       ],
     },
     {
       heading: 'Döviz ve Emtia Piyasaları',
       subheading: 'Güncel kurlar ve Brent petrol fiyatı.',
+      image:
+        'https://images.pexels.com/photos/38905596/pexels-photo-38905596/free-photo-of-stock-market-candlestick-chart-analysis.jpeg',
       stats: [
-        { name: 'USD/TRY', value: data?.usdTry, unit: '₺' },
-        { name: 'EUR/TRY', value: data?.eurTry, unit: '₺' },
-        { name: 'GBP/TRY', value: data?.gbpTry, unit: '₺' },
+        { name: 'USD/TRY', value: data?.usdTry, unit: '₺', trend: data?.trends.usdTry },
+        { name: 'EUR/TRY', value: data?.eurTry, unit: '₺', trend: data?.trends.eurTry },
+        { name: 'GBP/TRY', value: data?.gbpTry, unit: '₺', trend: data?.trends.gbpTry },
         { name: 'Brent Petrol', value: data?.brent, unit: '$' },
       ],
     },
     {
       heading: 'Bugünkü Lisans Hareketleri',
       subheading: 'Petrol, LPG, doğalgaz ve elektrik piyasalarında bugün.',
+      image: 'https://images.pexels.com/photos/18415475/pexels-photo-18415475.jpeg',
       stats: [
         { name: 'Yeni Lisans', value: sumField('issued'), unit: '' },
         { name: 'Transfer Edildi', value: sumField('TRANSFER_EDILDI'), unit: '' },
@@ -92,94 +108,114 @@ export default function Hero() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
 
   const loading = liveLoading || summaryLoading
-  const active = slides[currentSlide]
-  const cols = GRID_COLS[active.stats.length] ?? 'md:grid-cols-4'
 
   return (
-    <section className='bg-brand-gold text-gray-900 relative'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center'>
-        <div className='w-10 h-1 rounded-full bg-brand-purple mx-auto mb-5' />
-
-        <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
-          {active.heading}
-        </h1>
-        <p className='mt-4 text-base sm:text-lg text-gray-800 max-w-xl mx-auto'>
-          {active.subheading}
-        </p>
-
-        <div
-          className={`mt-10 grid grid-cols-2 ${cols} gap-3 max-w-3xl mx-auto`}
-        >
-          {loading ? (
-            [...Array(active.stats.length)].map((_, i) => (
-              <div
-                key={i}
-                className='animate-pulse bg-white/40 border border-black/10 rounded-xl p-4 h-[76px]'
-              />
-            ))
-          ) : error ? (
-            <div className='col-span-full text-sm text-red-800 font-medium'>{error}</div>
-          ) : (
-            active.stats.map((stat) => (
-              <div
-                key={stat.name}
-                className='bg-white border border-black/5 rounded-xl p-4 text-left shadow-sm'
-              >
-                <p className='text-xs text-gray-500'>{stat.name}</p>
-                <p className='mt-1 text-xl font-semibold text-gray-900'>
-                  {stat.value !== undefined && stat.value !== null
-                    ? stat.unit === '$' || stat.unit === '₺'
-                      ? stat.value.toFixed(2)
-                      : Math.round(stat.value)
-                    : '—'}
-                  {stat.unit && (
-                    <span className='text-sm font-normal text-gray-400 ml-1'>
-                      {stat.unit}
-                    </span>
-                  )}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {currentSlide === 0 && updatedOn && (
-          <p className='mt-4 text-xs text-gray-700'>
-            EPDK bayi satış fiyatı bülteni · {updatedOn}
-          </p>
-        )}
-
-        {/* Slide navigation */}
-        <div className='flex items-center justify-center gap-2 mt-8'>
-          {slides.map((slide, i) => (
-            <button
+    <section className='relative bg-gray-950 text-white overflow-hidden'>
+      <div
+        className='flex transition-transform duration-700 ease-in-out'
+        style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+      >
+        {slides.map((slide) => {
+          const cols = GRID_COLS[slide.stats.length] ?? 'md:grid-cols-4'
+          return (
+            <div
               key={slide.heading}
-              type='button'
-              onClick={() => setCurrentSlide(i)}
-              className={`h-1.5 rounded-full transition-all ${
-                currentSlide === i ? 'w-6 bg-brand-purple' : 'w-1.5 bg-black/20'
-              }`}
-              aria-label={`${i + 1}. slayta git`}
-            />
-          ))}
-        </div>
+              className='w-full flex-shrink-0 relative bg-cover bg-center min-h-[560px] flex items-center'
+              style={{ backgroundImage: `url(${slide.image})` }}
+            >
+              <div className='absolute inset-0 bg-gradient-to-b from-black/75 via-brand-purple-dark/70 to-black/80' />
+
+              <div className='relative w-full max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center'>
+                <div className='w-10 h-1 rounded-full bg-brand-gold mx-auto mb-5' />
+
+                <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight'>
+                  {slide.heading}
+                </h1>
+                <p className='mt-4 text-base sm:text-lg text-gray-200 max-w-xl mx-auto'>
+                  {slide.subheading}
+                </p>
+
+                <div
+                  className={`mt-10 grid grid-cols-2 ${cols} gap-3 max-w-3xl mx-auto`}
+                >
+                  {loading ? (
+                    [...Array(slide.stats.length)].map((_, i) => (
+                      <div
+                        key={i}
+                        className='animate-pulse bg-white/20 border border-white/10 rounded-xl p-4 h-[76px]'
+                      />
+                    ))
+                  ) : error ? (
+                    <div className='col-span-full text-sm text-red-300 font-medium'>
+                      {error}
+                    </div>
+                  ) : (
+                    slide.stats.map((stat) => (
+                      <div
+                        key={stat.name}
+                        className='bg-white/95 backdrop-blur-sm border border-black/5 rounded-xl p-4 text-left shadow-sm'
+                      >
+                        <p className='text-xs text-gray-500'>{stat.name}</p>
+                        <p className='mt-1 text-xl font-semibold text-gray-900 flex items-center gap-1'>
+                          {stat.value !== undefined && stat.value !== null
+                            ? stat.unit === '$' || stat.unit === '₺'
+                              ? stat.value.toFixed(2)
+                              : Math.round(stat.value)
+                            : '—'}
+                          {stat.unit && (
+                            <span className='text-sm font-normal text-gray-400 ml-1'>
+                              {stat.unit}
+                            </span>
+                          )}
+                          <TrendArrow trend={stat.trend} />
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {currentSlide === 0 && updatedOn && (
+                  <p className='mt-4 text-xs text-gray-300'>
+                    EPDK bayi satış fiyatı bülteni · {updatedOn}
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Slide navigation -- overlaid on the section, not the sliding
+          track, so it stays fixed in place as slides scroll past. */}
+      <div className='absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2'>
+        {slides.map((slide, i) => (
+          <button
+            key={slide.heading}
+            type='button'
+            onClick={() => setCurrentSlide(i)}
+            className={`h-1.5 rounded-full transition-all ${
+              currentSlide === i ? 'w-6 bg-brand-gold' : 'w-1.5 bg-white/40'
+            }`}
+            aria-label={`${i + 1}. slayta git`}
+          />
+        ))}
       </div>
 
       <button
         type='button'
         onClick={prevSlide}
-        className='hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-sm transition-colors'
+        className='hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-sm p-2 rounded-full transition-colors'
         aria-label='Önceki slayt'
       >
-        <ChevronLeftIcon className='h-5 w-5 text-gray-700' />
+        <ChevronLeftIcon className='h-5 w-5 text-white' />
       </button>
       <button
         type='button'
         onClick={nextSlide}
-        className='hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-sm transition-colors'
+        className='hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 backdrop-blur-sm p-2 rounded-full transition-colors'
         aria-label='Sonraki slayt'
       >
-        <ChevronRightIcon className='h-5 w-5 text-gray-700' />
+        <ChevronRightIcon className='h-5 w-5 text-white' />
       </button>
     </section>
   )

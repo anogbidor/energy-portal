@@ -7,11 +7,14 @@ export type FuelPriceItem = {
   tarih: string
 }
 
+export type Trend = 'up' | 'down' | 'flat' | null
+
 export type LiveData = {
   brent: number | null
   usdTry: number | null
   eurTry: number | null
   gbpTry: number | null
+  trends: { usdTry: Trend; eurTry: Trend; gbpTry: Trend }
   fuelPrices: FuelPriceItem[]
   lpgPrices: FuelPriceItem[]
 }

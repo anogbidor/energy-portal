@@ -1,5 +1,12 @@
 // src/components/ExchangeRates.tsx
-import { useLiveData } from '../hooks/useLiveData'
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/solid'
+import { useLiveData, type Trend } from '../hooks/useLiveData'
+
+function TrendArrow({ trend }: { trend: Trend }) {
+  if (trend === 'up') return <ArrowTrendingUpIcon className='h-4 w-4 text-green-600' />
+  if (trend === 'down') return <ArrowTrendingDownIcon className='h-4 w-4 text-red-600' />
+  return null
+}
 
 export default function ExchangeRates() {
   const { data, loading, error } = useLiveData()
@@ -23,9 +30,9 @@ export default function ExchangeRates() {
   if (!data) return <p className='text-sm text-gray-500'>Veri yok.</p>
 
   const rates = [
-    { name: 'USD/TRY', symbol: '$', value: data.usdTry },
-    { name: 'EUR/TRY', symbol: '€', value: data.eurTry },
-    { name: 'GBP/TRY', symbol: '£', value: data.gbpTry },
+    { name: 'USD/TRY', symbol: '$', value: data.usdTry, trend: data.trends.usdTry },
+    { name: 'EUR/TRY', symbol: '€', value: data.eurTry, trend: data.trends.eurTry },
+    { name: 'GBP/TRY', symbol: '£', value: data.gbpTry, trend: data.trends.gbpTry },
   ]
 
   return (
@@ -37,11 +44,12 @@ export default function ExchangeRates() {
         >
           <div>
             <p className='text-xs font-medium text-gray-500'>{rate.name}</p>
-            <p className='text-lg font-semibold text-gray-900 mt-1'>
+            <p className='text-lg font-semibold text-gray-900 mt-1 flex items-center gap-1'>
               {rate.value !== null ? (
                 <>
                   {rate.symbol} {rate.value.toFixed(2)}
-                  <span className='text-sm font-normal ml-1'>₺</span>
+                  <span className='text-sm font-normal ml-0.5'>₺</span>
+                  <TrendArrow trend={rate.trend} />
                 </>
               ) : (
                 '-'
