@@ -6,6 +6,7 @@ import News from '../pages/News'
 import Prices from '../pages/Prices'
 import License from '../pages/License'
 import LicenseDetail from '../pages/LicenseDetail'
+import DistributorSummary from '../pages/DistributorSummary'
 
 // Stations pulls in @react-google-maps/api, the single largest dependency
 // in the bundle -- lazy-loading it keeps that weight out of every other
@@ -45,6 +46,7 @@ const AppRoutes = () => (
     />
     <Route path='/license' element={<License />} />
     <Route path='/license/detail' element={<LicenseDetail />} />
+    <Route path='/license/distributors' element={<DistributorSummary />} />
   </Routes>
 )
 

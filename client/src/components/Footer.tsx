@@ -15,6 +15,11 @@ const marketLinks = [
   { market: 'elektrik', name: 'Elektrik' },
 ]
 
+const distributorSummaryLinks = [
+  { market: 'petrol', name: 'Petrol Dağıtım Şirketleri' },
+  { market: 'lpg', name: 'LPG Dağıtım Şirketleri' },
+]
+
 export default function Footer() {
   return (
     <footer className='bg-gray-950 text-gray-400 mt-auto'>
@@ -42,6 +47,22 @@ export default function Footer() {
                   <Link
                     key={link.market}
                     to={`/license?market=${link.market}`}
+                    className='hover:text-white transition-colors'
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            <div>
+              <h3 className='text-xs font-semibold text-gray-300 uppercase tracking-wide mb-3'>
+                Dağıtıcı Özeti
+              </h3>
+              <nav className='flex flex-col gap-2 text-sm'>
+                {distributorSummaryLinks.map((link) => (
+                  <Link
+                    key={link.market}
+                    to={`/license/distributors?market=${link.market}`}
                     className='hover:text-white transition-colors'
                   >
                     {link.name}
