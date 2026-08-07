@@ -41,6 +41,7 @@ export default function Home() {
   return (
     <div className='bg-gray-50 min-h-screen'>
       <Hero />
+      <PriceTicker />
 
       <section className='py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto'>
         {/* License Summary Table */}
@@ -177,8 +178,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <PriceTicker />
     </div>
   )
 }
