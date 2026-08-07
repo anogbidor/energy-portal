@@ -103,16 +103,22 @@ export async function runBayilikIngestion(
             1
           )
 
-          // Seen under heavy 429 pressure: the gateway occasionally
-          // returns 200 with a non-array body instead of the expected
-          // list, which used to surface as an opaque "records is not
-          // iterable" from the raw spread below.
-          if (!Array.isArray(records)) {
+          // `null` turned out to be EPDK's real response for a
+          // distributor with zero current dealers, not an error --
+          // confirmed directly: the same one or two distributors
+          // returned it on every single retry, permanently (a genuine
+          // transient fault would eventually succeed). Treating it as a
+          // failure meant that distributor's bayilik_last_fetched_at
+          // never got set, so it stayed at the front of the nullsFirst
+          // queue forever and blocked every distributor behind it from
+          // ever being (re-)checked. Only a non-null, non-array body
+          // (e.g. a fault object) is a real failure worth retrying.
+          if (records !== null && !Array.isArray(records)) {
             throw new Error(
-              `EPDK gateway returned non-array response: ${JSON.stringify(records)}`
+              `EPDK gateway returned unexpected response shape: ${JSON.stringify(records)}`
             )
           }
-          allRecords.push(...records)
+          if (records) allRecords.push(...records)
 
           // Mark this distributor checked regardless of how many dealers
           // it returned, so one with zero current dealers doesn't get
