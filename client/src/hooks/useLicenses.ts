@@ -17,6 +17,12 @@ export interface LicenseItem {
   adres?: string
   digerPiyasaFaaliyetTurleri?: string[]
   satisiYapilacakYakitTurleri?: string[]
+  // The distributor a bayi belongs to -- null for a dagitici record
+  // itself, since a distributor has no "parent" distributor. Was
+  // already sent by the API (licenseApiShape.ts) but never declared
+  // here, so nothing outside LicenseDetail's own inline type could
+  // actually read it.
+  dagitimSirketi?: string | null
   // True when this license has a distributor-transfer event in its
   // history even though its own status stayed ONAYLANDI throughout --
   // lets the table show a "Transfer Edildi" marker under "Yürürlükte"

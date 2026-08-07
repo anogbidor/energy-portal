@@ -10,7 +10,7 @@ import { markTransferViewed } from '../lib/viewedTransfers'
 
 const NETWORK_HEADERS = [
   { key: 'lisansDurumu', label: 'Durum' },
-  { key: 'lisansSahibiUnvani', label: 'Şirketi' },
+  { key: 'lisansSahibiUnvani', label: 'Unvan' },
   { key: 'lisansNo', label: 'Lisans No' },
   { key: 'il', label: 'İl' },
   { key: 'ilce', label: 'İlçe' },
@@ -19,7 +19,8 @@ const NETWORK_HEADERS = [
 const RELATED_HEADERS = [
   { key: 'lisansDurumu', label: 'Durum' },
   { key: 'market', label: 'Piyasa' },
-  { key: 'lisansSahibiUnvani', label: 'Şirketi' },
+  { key: 'dagitimSirketi', label: 'Şirket' },
+  { key: 'lisansSahibiUnvani', label: 'Unvan' },
   { key: 'lisansNo', label: 'Lisans No' },
   { key: 'il', label: 'İl' },
 ]

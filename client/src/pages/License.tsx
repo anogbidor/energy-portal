@@ -18,7 +18,8 @@ const MARKET_TAB_OPTIONS: { value: Market; label: string }[] = [
 
 const TABLE_HEADERS = [
   { key: 'lisansDurumu', label: 'EPDK Lisans Durumu' },
-  { key: 'lisansSahibiUnvani', label: 'Şirketi' },
+  { key: 'dagitimSirketi', label: 'Şirket' },
+  { key: 'lisansSahibiUnvani', label: 'Unvan' },
   { key: 'lisansNo', label: 'Lisans No' },
   { key: 'vergiNo', label: 'Vergi No' },
   { key: 'baslangicTarihi', label: 'Başlangıç Tarihi' },

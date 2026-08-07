@@ -110,6 +110,8 @@ export default function LicenseTable({
             )}
           </div>
         )
+      case 'dagitimSirketi':
+        return item.dagitimSirketi || <span className='text-gray-300'>-</span>
       case 'lisansSahibiUnvani':
         return item.lisansSahibiUnvani
       case 'lisansNo':
@@ -143,7 +145,12 @@ export default function LicenseTable({
     }
   }
 
-  const WRAPPING_KEYS = new Set(['lisansSahibiUnvani', 'adres', 'iptalAciklama'])
+  const WRAPPING_KEYS = new Set([
+    'lisansSahibiUnvani',
+    'dagitimSirketi',
+    'adres',
+    'iptalAciklama',
+  ])
   const NOWRAP_KEYS = new Set([
     'lisansDurumu',
     'lisansNo',
