@@ -1,12 +1,11 @@
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useLicenseDetail, type HistoryEvent } from '../hooks/useLicenseDetail'
 import { useNetworkHistory } from '../hooks/useNetworkHistory'
 import type { Market } from '../hooks/useLicenses'
 import LicenseTable from '../components/LicenseTable'
 import Sparkline from '../components/Sparkline'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
-import { markTransferViewed } from '../lib/viewedTransfers'
 
 const NETWORK_HEADERS = [
   { key: 'lisansDurumu', label: 'Durum' },
@@ -123,14 +122,6 @@ export default function LicenseDetail() {
     market ?? undefined,
     lisansNo ?? undefined
   )
-
-  // Covers every path into this page, not just LicenseTable's own row
-  // click (e.g. arriving straight from a takvim link or a shared URL) --
-  // wherever the glow shows a license as unviewed, actually opening its
-  // detail page is what should clear it.
-  useEffect(() => {
-    if (lisansNo) markTransferViewed(lisansNo)
-  }, [lisansNo])
 
   if (!market || !lisansNo) {
     return (

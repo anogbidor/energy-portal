@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LicenseItem, Market } from '../hooks/useLicenses'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
 import { prefetchLicenseDetail } from '../hooks/useLicenseDetail'
-import { isTransferViewed, markTransferViewed } from '../lib/viewedTransfers'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -34,15 +32,6 @@ export default function LicenseTable({
 }: LicenseTableProps) {
   const navigate = useNavigate()
   const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-  // localStorage doesn't trigger a re-render on its own -- this just
-  // forces one immediately after a click marks a license viewed, so its
-  // glow disappears right away instead of only on the next page load.
-  const [, forceRerender] = useState(0)
-  const markViewed = (lisansNo: string) => {
-    markTransferViewed(lisansNo)
-    forceRerender((n) => n + 1)
-  }
 
   const getSortIndicator = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) return null
@@ -94,17 +83,15 @@ export default function LicenseTable({
               {displayStatus(item.lisansDurumu)}
             </span>
             {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
-              <span
-                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-brand-purple ${
-                  isTransferViewed(item.lisansNo) ? '' : 'bg-brand-purple/10'
-                }`}
-              >
-                {!isTransferViewed(item.lisansNo) && (
-                  <span className='relative flex h-1.5 w-1.5'>
-                    <span className='animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75' />
-                    <span className='relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-purple' />
-                  </span>
-                )}
+              // Permanent, not a one-time "unseen" notification -- the
+              // ping is a standing cue that this row has real detail
+              // (which distributor, which date) only visible by
+              // clicking through, not something to dismiss once noticed.
+              <span className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-brand-purple bg-brand-purple/10'>
+                <span className='relative flex h-1.5 w-1.5'>
+                  <span className='animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75' />
+                  <span className='relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-purple' />
+                </span>
                 Transfer Edildi
               </span>
             )}
@@ -195,14 +182,12 @@ export default function LicenseTable({
                     key={`${item.lisansNo}-${i}`}
                     onClick={
                       market
-                        ? () => {
-                            markViewed(item.lisansNo)
+                        ? () =>
                             navigate(
                               `/license/detail?market=${
                                 (item as { market?: string }).market ?? market
                               }&lisansNo=${encodeURIComponent(item.lisansNo)}`
                             )
-                          }
                         : undefined
                     }
                     onMouseEnter={
