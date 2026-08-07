@@ -4,24 +4,28 @@ export type ExchangeRates = {
   gbpTry: number | null
 }
 
-// exchangerate.host's /live endpoint only gives USD-based quotes
-// (USDTRY, USDEUR, USDGBP), so EUR/TRY and GBP/TRY are derived by
-// dividing USD/TRY by USD/EUR and USD/GBP respectively. Shared by
-// live-data.ts (serves the current rates) and the daily snapshot cron
-// (persists them for the trend arrows) so there's one place that knows
-// how to talk to this API.
+// Frankfurter (ECB reference rates) -- free, no API key, no quota.
+// Switched from exchangerate.host after its free-tier monthly limit
+// was exhausted; this has no key to run out. One call gives TRY/EUR/GBP
+// per USD; EUR/TRY and GBP/TRY are derived the same way the old
+// exchangerate.host-based code did (usdTry / (currency per USD)) since
+// Frankfurter doesn't offer a direct TRY base. Shared by live-data.ts
+// (serves the current rates) and the daily snapshot cron (persists
+// them for the trend arrows) so there's one place that knows how to
+// talk to this API.
 export async function fetchExchangeRates(): Promise<ExchangeRates> {
-  const apiKey = process.env.EXCHANGE_API_KEY
-  const res = await fetch(`https://api.exchangerate.host/live?access_key=${apiKey}`)
+  const res = await fetch(
+    'https://api.frankfurter.dev/v1/latest?from=USD&to=TRY,EUR,GBP'
+  )
   const data = await res.json()
 
-  const USDTRY = data?.quotes?.USDTRY ?? null
-  const USDEUR = data?.quotes?.USDEUR ?? null
-  const USDGBP = data?.quotes?.USDGBP ?? null
+  const usdTry = data?.rates?.TRY ?? null
+  const usdEur = data?.rates?.EUR ?? null
+  const usdGbp = data?.rates?.GBP ?? null
 
   return {
-    usdTry: USDTRY,
-    eurTry: USDTRY && USDEUR ? USDTRY / USDEUR : null,
-    gbpTry: USDTRY && USDGBP ? USDTRY / USDGBP : null,
+    usdTry,
+    eurTry: usdTry && usdEur ? usdTry / usdEur : null,
+    gbpTry: usdTry && usdGbp ? usdTry / usdGbp : null,
   }
 }
