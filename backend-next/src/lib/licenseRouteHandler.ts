@@ -60,9 +60,34 @@ export function createLicenseRoute(market: string) {
       const { data, error } = await query
       if (error) throw error
 
+      // A license stays lisans_durumu=ONAYLANDI ("Yürürlükte") straight
+      // through a distributor transfer -- only license_events records
+      // that it happened. Without this, a transferred license and a
+      // freshly-issued one are indistinguishable in the list; you'd have
+      // to open each one's detail page to find out which is which.
+      const batchLisansNos = Array.from(
+        new Set((data ?? []).map((row) => row.lisans_no as string))
+      )
+      const IN_CHUNK_SIZE = 400
+      const transferredLisansNos = new Set<string>()
+      for (let i = 0; i < batchLisansNos.length; i += IN_CHUNK_SIZE) {
+        const chunk = batchLisansNos.slice(i, i + IN_CHUNK_SIZE)
+        const { data: transferEvents } = await supabase
+          .from('license_events')
+          .select('lisans_no')
+          .eq('market', market)
+          .eq('event_type', 'distributor_changed')
+          .in('lisans_no', chunk)
+        for (const row of transferEvents ?? []) {
+          transferredLisansNos.add(row.lisans_no as string)
+        }
+      }
+
       return res.status(200).json({
         success: true,
-        data: (data ?? []).map(toLicenseApiShape),
+        data: (data ?? []).map((row) =>
+          toLicenseApiShape(row, transferredLisansNos.has(row.lisans_no as string))
+        ),
       })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'

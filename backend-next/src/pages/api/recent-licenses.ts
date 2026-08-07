@@ -50,7 +50,7 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      data: (data ?? []).map(toLicenseApiShape),
+      data: (data ?? []).map((row) => toLicenseApiShape(row)),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'

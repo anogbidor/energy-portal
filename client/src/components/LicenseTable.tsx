@@ -43,9 +43,13 @@ export default function LicenseTable({
     onPageChange(Math.max(1, Math.min(page, totalPages)))
   }
 
-  function displayStatus(status: string) {
+  function displayStatus(status: string, hasTransferred?: boolean) {
     const normalized = status.toUpperCase().replace(/\s+/g, '_')
-    return STATUS_LABELS[normalized] || status
+    const label = STATUS_LABELS[normalized] || status
+    // Only worth flagging on an active license -- one that's since been
+    // cancelled/terminated already shows a status distinct from
+    // "Yürürlükte", so there's nothing to disambiguate there.
+    return normalized === 'ONAYLANDI' && hasTransferred ? `${label} (Devir)` : label
   }
 
   function badgeClass(status: string) {
@@ -73,7 +77,7 @@ export default function LicenseTable({
               item.lisansDurumu
             )}`}
           >
-            {displayStatus(item.lisansDurumu)}
+            {displayStatus(item.lisansDurumu, item.hasTransferred)}
           </span>
         )
       case 'lisansSahibiUnvani':

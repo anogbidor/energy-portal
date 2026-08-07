@@ -102,7 +102,7 @@ export default async function handler(
           .order('lisans_sahibi_unvani', { ascending: true })
           .range(from, from + PAGE_SIZE - 1)
         if (bayiError) throw bayiError
-        network = (bayiRows ?? []).map(toLicenseApiShape)
+        network = (bayiRows ?? []).map((row) => toLicenseApiShape(row))
       }
 
       if (countOnly) {
@@ -163,7 +163,7 @@ export default async function handler(
         .neq('lisans_no', lisansNo)
         .limit(200)
       if (relatedError) throw relatedError
-      relatedLicenses = (relatedRows ?? []).map(toLicenseApiShape)
+      relatedLicenses = (relatedRows ?? []).map((row) => toLicenseApiShape(row))
     }
 
     return res.status(200).json({
