@@ -95,10 +95,16 @@ export default function LicenseTable({
             </span>
             {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
               <span
-                className={`text-xs font-medium text-brand-purple rounded-full ${
-                  isTransferViewed(item.lisansNo) ? '' : 'glow-pulse'
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium text-brand-purple ${
+                  isTransferViewed(item.lisansNo) ? '' : 'bg-brand-purple/10'
                 }`}
               >
+                {!isTransferViewed(item.lisansNo) && (
+                  <span className='relative flex h-1.5 w-1.5'>
+                    <span className='animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75' />
+                    <span className='relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-purple' />
+                  </span>
+                )}
                 Transfer Edildi
               </span>
             )}

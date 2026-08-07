@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useLicenseDetail, type HistoryEvent } from '../hooks/useLicenseDetail'
 import { useNetworkHistory } from '../hooks/useNetworkHistory'
@@ -31,43 +31,82 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString('tr-TR')
 }
 
-function statusLabel(value: unknown) {
-  if (typeof value !== 'string') return value ?? 'Bilinmiyor'
+function statusLabel(value: unknown): string {
+  if (typeof value !== 'string') return 'Bilinmiyor'
   return STATUS_LABELS[value] ?? value
 }
 
-function describeEvent(event: HistoryEvent): { label: string; dotClass: string } {
+type EventDescription = {
+  heading: string
+  dotClass: string
+  change?: { from: string; to: string }
+}
+
+function describeEvent(event: HistoryEvent): EventDescription {
   switch (event.eventType) {
     case 'issued':
-      return { label: 'Lisans verildi', dotClass: 'bg-green-600' }
+      return { heading: 'Lisans verildi', dotClass: 'bg-green-600' }
     case 'status_changed':
       return {
-        label: `${statusLabel(event.oldValue?.lisans_durumu)} → ${statusLabel(
-          event.newValue?.lisans_durumu
-        )}`,
+        heading: 'Durum değişti',
         dotClass: 'bg-amber-500',
+        change: {
+          from: statusLabel(event.oldValue?.lisans_durumu),
+          to: statusLabel(event.newValue?.lisans_durumu),
+        },
       }
     case 'unvan_changed':
       return {
-        label: `Unvan: ${event.oldValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'} → ${
-          event.newValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'
-        }`,
+        heading: 'Unvan değişti',
         dotClass: 'bg-sky-500',
+        change: {
+          from: String(event.oldValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'),
+          to: String(event.newValue?.lisans_sahibi_unvani ?? 'Bilinmiyor'),
+        },
       }
     case 'distributor_changed':
       return {
-        label: `${event.oldValue?.dagitim_sirketi ?? 'Bilinmiyor'} → ${
-          event.newValue?.dagitim_sirketi ?? 'Bilinmiyor'
-        }`,
+        heading: 'Dağıtıcı değişti (Transfer)',
         dotClass: 'bg-indigo-600',
+        change: {
+          from: String(event.oldValue?.dagitim_sirketi ?? 'Bilinmiyor'),
+          to: String(event.newValue?.dagitim_sirketi ?? 'Bilinmiyor'),
+        },
       }
     default:
-      return { label: 'Diğer güncelleme', dotClass: 'bg-gray-400' }
+      return { heading: 'Diğer güncelleme', dotClass: 'bg-gray-400' }
   }
+}
+
+// Old/new values are rendered as labeled rows instead of a single
+// "A → B" string -- company names in particular can run 80+ characters
+// (Turkish AŞ/Ltd. naming conventions), where a flat inline arrow
+// string reads as one confusing run-on rather than two clearly
+// separated values.
+function EventChange({ from, to }: { from: string; to: string }) {
+  return (
+    <div className='mt-2 space-y-1 text-xs'>
+      <div className='flex gap-2'>
+        <span className='w-14 flex-shrink-0 text-[10px] font-medium text-gray-400 uppercase tracking-wide pt-0.5'>
+          Önceki
+        </span>
+        <span className='text-gray-500 line-through decoration-gray-300'>
+          {from}
+        </span>
+      </div>
+      <div className='flex gap-2'>
+        <span className='w-14 flex-shrink-0 text-[10px] font-medium text-gray-400 uppercase tracking-wide pt-0.5'>
+          Yeni
+        </span>
+        <span className='text-gray-900 font-medium'>{to}</span>
+      </div>
+    </div>
+  )
 }
 
 export default function LicenseDetail() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const market = searchParams.get('market') as Market | null
   const lisansNo = searchParams.get('lisansNo')
   const [networkPage, setNetworkPage] = useState(1)
@@ -103,12 +142,22 @@ export default function LicenseDetail() {
   return (
     <main className='bg-gray-50 min-h-screen'>
       <div className='max-w-5xl mx-auto px-4 sm:px-6 py-10'>
-        <Link
-          to={`/license?market=${market}`}
+        <button
+          type='button'
+          onClick={() =>
+            // Real back navigation -- preserves whatever filters/date
+            // the user actually arrived with (e.g. a takvim link's
+            // ?date=), instead of always landing on the plain
+            // unfiltered list. Falls back to the list page only when
+            // there's no history to go back to (a direct/shared URL).
+            window.history.length > 1
+              ? navigate(-1)
+              : navigate(`/license?market=${market}`)
+          }
           className='text-sm text-gray-500 hover:text-gray-900 inline-flex items-center gap-1 mb-6'
         >
           ← Lisans listesine dön
-        </Link>
+        </button>
 
         {loading ? (
           <div className='animate-pulse'>
@@ -295,20 +344,23 @@ export default function LicenseDetail() {
                     {[...data.history]
                       .reverse()
                       .map((event, i) => {
-                        const { label, dotClass } = describeEvent(event)
+                        const { heading, dotClass, change } = describeEvent(event)
                         return (
                           <li key={i} className='flex items-start gap-3 text-sm'>
                             <span
                               className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 ${dotClass}`}
                             />
-                            <div>
-                              <p className='text-gray-900'>{label}</p>
+                            <div className='flex-1 min-w-0'>
+                              <p className='text-gray-900 font-medium'>{heading}</p>
+                              {change && (
+                                <EventChange from={change.from} to={change.to} />
+                              )}
                               {event.note && (
-                                <p className='text-xs text-gray-500 mt-0.5'>
+                                <p className='text-xs text-gray-500 mt-1.5'>
                                   {event.note}
                                 </p>
                               )}
-                              <p className='text-xs text-gray-400 mt-0.5'>
+                              <p className='text-xs text-gray-400 mt-1.5'>
                                 {formatDate(event.effectiveAt)}
                               </p>
                             </div>
