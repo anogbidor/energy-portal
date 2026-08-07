@@ -1,6 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom'
 import { useDistributorSummary } from '../hooks/useDistributorSummary'
 import type { Market } from '../hooks/useLicenses'
+import SegmentedTabs from '../components/ui/SegmentedTabs'
 
 const MARKETS: { market: Market; label: string }[] = [
   { market: 'petrol', label: 'Petrol' },
@@ -36,26 +37,15 @@ export default function DistributorSummary() {
           </p>
         </header>
 
-        <nav className='mb-6'>
-          <div className='flex justify-center gap-1 bg-white border border-gray-200 p-1 rounded-full max-w-xs mx-auto'>
-            {MARKETS.map(({ market: m, label }) => (
-              <button
-                key={m}
-                type='button'
-                onClick={() => setMarket(m)}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  market === m
-                    ? 'bg-brand-purple text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <nav className='mb-6 flex justify-center'>
+          <SegmentedTabs
+            options={MARKETS.map(({ market: value, label }) => ({ value, label }))}
+            value={market}
+            onChange={setMarket}
+          />
         </nav>
 
-        <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
+        <div className='bg-white border border-gray-200 rounded-xl overflow-hidden'>
           {loading ? (
             <div className='p-4 space-y-2'>
               {[...Array(10)].map((_, i) => (
@@ -69,21 +59,21 @@ export default function DistributorSummary() {
           ) : (
             <div className='overflow-x-auto'>
               <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
+                <thead>
                   <tr>
-                    <th className='px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+                    <th className='px-4 py-3 text-left text-xs font-medium text-gray-500'>
                       Ünvan
                     </th>
-                    <th className='px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+                    <th className='px-3 py-3 text-right text-xs font-medium text-gray-500'>
                       Aktif
                     </th>
-                    <th className='px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+                    <th className='px-3 py-3 text-right text-xs font-medium text-gray-500'>
                       İptal
                     </th>
-                    <th className='px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+                    <th className='px-3 py-3 text-right text-xs font-medium text-gray-500'>
                       Transfer
                     </th>
-                    <th className='px-3 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+                    <th className='px-3 py-3 text-right text-xs font-medium text-gray-500'>
                       Kaybedilen
                     </th>
                   </tr>
@@ -96,7 +86,7 @@ export default function DistributorSummary() {
                         i % 2 === 1 ? 'bg-gray-50/50' : ''
                       }`}
                     >
-                      <td className='px-4 py-2.5 text-sm'>
+                      <td className='px-4 py-3 text-sm'>
                         <Link
                           to={`/license/detail?market=${market}&lisansNo=${encodeURIComponent(
                             row.lisansNo
@@ -106,16 +96,16 @@ export default function DistributorSummary() {
                           {row.lisansSahibiUnvani}
                         </Link>
                       </td>
-                      <td className='px-3 py-2.5 text-sm text-right tabular-nums text-gray-900'>
+                      <td className='px-3 py-3 text-sm text-right tabular-nums text-gray-900'>
                         {row.aktif.toLocaleString('tr-TR')}
                       </td>
-                      <td className='px-3 py-2.5 text-sm text-right tabular-nums text-gray-500'>
+                      <td className='px-3 py-3 text-sm text-right tabular-nums text-gray-500'>
                         {row.iptal.toLocaleString('tr-TR')}
                       </td>
-                      <td className='px-3 py-2.5 text-sm text-right tabular-nums text-green-700'>
+                      <td className='px-3 py-3 text-sm text-right tabular-nums text-green-700'>
                         {row.transferIn.toLocaleString('tr-TR')}
                       </td>
-                      <td className='px-3 py-2.5 text-sm text-right tabular-nums text-red-600'>
+                      <td className='px-3 py-3 text-sm text-right tabular-nums text-red-600'>
                         {row.transferOut.toLocaleString('tr-TR')}
                       </td>
                     </tr>

@@ -85,9 +85,9 @@ export default function LicenseTable({
     switch (key) {
       case 'lisansDurumu':
         return (
-          <div className='flex flex-col items-center gap-0.5'>
+          <div className='flex flex-col items-center gap-1'>
             <span
-              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass(
                 item.lisansDurumu
               )}`}
             >
@@ -95,7 +95,7 @@ export default function LicenseTable({
             </span>
             {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
               <span
-                className={`text-[10px] font-medium text-brand-purple rounded-full ${
+                className={`text-xs font-medium text-brand-purple rounded-full ${
                   isTransferViewed(item.lisansNo) ? '' : 'glow-pulse'
                 }`}
               >
@@ -153,16 +153,16 @@ export default function LicenseTable({
   return (
     <>
       {/* Table container */}
-      <div className='overflow-hidden border border-gray-200 rounded-lg'>
+      <div className='overflow-hidden border border-gray-200 rounded-xl'>
         <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-300'>
-            <thead className='bg-gray-50'>
+          <table className='min-w-full divide-y divide-gray-200'>
+            <thead>
               <tr>
                 {tableHeaders.map((header) => (
                   <th
                     key={header.key}
                     scope='col'
-                    className='px-2 py-2 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:bg-gray-100'
+                    className='px-3 py-3 text-left text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700'
                     onClick={() => onRequestSort(header.key)}
                   >
                     <div className='flex items-center'>
@@ -209,7 +209,7 @@ export default function LicenseTable({
                     {tableHeaders.map((header) => (
                       <td
                         key={header.key}
-                        className={`px-2 py-2 text-xs ${
+                        className={`px-3 py-3 text-xs ${
                           header.key === 'lisansSahibiUnvani'
                             ? 'font-medium text-gray-900'
                             : 'text-gray-500'
@@ -226,7 +226,7 @@ export default function LicenseTable({
                 <tr>
                   <td
                     colSpan={tableHeaders.length}
-                    className='px-3 py-2 text-center text-xs text-gray-500'
+                    className='px-3 py-6 text-center text-xs text-gray-500'
                   >
                     Veri bulunamadı
                   </td>
@@ -239,28 +239,26 @@ export default function LicenseTable({
 
       {/* Pagination controls */}
       {totalPages > 1 && (
-        <div className='flex items-center justify-between px-4 py-2 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg'>
+        <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-xl'>
           <div className='flex-1 flex items-center justify-between'>
-            <div>
-              <p className='text-xs text-gray-700'>
-                <span className='font-medium'>
-                  {(currentPage - 1) * itemsPerPage + 1}
-                </span>{' '}
-                -{' '}
-                <span className='font-medium'>
-                  {Math.min(currentPage * itemsPerPage, totalItems)}
-                </span>{' '}
-                / <span className='font-medium'>{totalItems}</span> kayıt
-              </p>
-            </div>
-            <nav className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'>
+            <p className='text-xs text-gray-500'>
+              <span className='font-medium text-gray-700'>
+                {(currentPage - 1) * itemsPerPage + 1}
+              </span>{' '}
+              -{' '}
+              <span className='font-medium text-gray-700'>
+                {Math.min(currentPage * itemsPerPage, totalItems)}
+              </span>{' '}
+              / <span className='font-medium text-gray-700'>{totalItems}</span> kayıt
+            </p>
+            <nav className='flex items-center gap-1'>
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-2 py-1 rounded-l-md border border-gray-300 bg-white text-xs font-medium ${
+                className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   currentPage === 1
                     ? 'text-gray-300'
-                    : 'text-gray-500 hover:bg-gray-50'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 Önceki
@@ -277,14 +275,14 @@ export default function LicenseTable({
                   pageNum = currentPage - 2 + i
                 }
                 return (
-                 <button
+                  <button
                     type='button'
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`relative inline-flex items-center px-3 py-1 border text-xs font-medium ${
+                    className={`inline-flex items-center justify-center h-7 w-7 rounded-lg text-xs font-medium transition-colors ${
                       currentPage === pageNum
-                        ? 'z-10 bg-brand-purple border-brand-purple text-white'
-                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        ? 'bg-gray-900 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     {pageNum}
@@ -294,10 +292,10 @@ export default function LicenseTable({
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`relative inline-flex items-center px-2 py-1 rounded-r-md border border-gray-300 bg-white text-xs font-medium ${
+                className={`inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   currentPage === totalPages
                     ? 'text-gray-300'
-                    : 'text-gray-500 hover:bg-gray-50'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 Sonraki

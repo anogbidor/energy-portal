@@ -6,8 +6,15 @@ import LicenseTable from '../components/LicenseTable'
 import type { LicenseItem } from '../hooks/useLicenses'
 import { STATUS_LABELS } from '../lib/licenseStatus'
 import { fetchNetworkCount } from '../hooks/useLicenseDetail'
+import SegmentedTabs from '../components/ui/SegmentedTabs'
 
 const MARKET_TYPES: Market[] = ['petrol', 'lpg', 'dogalgaz', 'elektrik']
+const MARKET_TAB_OPTIONS: { value: Market; label: string }[] = [
+  { value: 'petrol', label: 'Petrol' },
+  { value: 'lpg', label: 'LPG' },
+  { value: 'dogalgaz', label: 'Doğalgaz' },
+  { value: 'elektrik', label: 'Elektrik' },
+]
 
 const TABLE_HEADERS = [
   { key: 'lisansDurumu', label: 'EPDK Lisans Durumu' },
@@ -262,34 +269,12 @@ export default function LicensesPage() {
         </div>
       )}
 
-      <nav className='mb-8'>
-        <div className='flex justify-center gap-1 bg-white border border-gray-200 p-1 rounded-full max-w-md mx-auto'>
-          {MARKET_TYPES.map((market) => {
-            const isSelected = activeMarket === market
-            return (
-              <button
-                key={market}
-                onClick={() => handleMarketChange(market)}
-                className={`
-            px-6 py-2 rounded-full text-sm font-medium
-            transition-all duration-200
-            ${
-              isSelected
-                ? 'bg-brand-purple text-white'
-                : 'text-gray-600 hover:text-gray-900'
-            }
-            whitespace-nowrap
-          `}
-              >
-                {market === 'dogalgaz'
-                  ? 'Doğalgaz '
-                  : market === 'elektrik'
-                  ? 'Elektrik'
-                  : market.toUpperCase()}
-              </button>
-            )
-          })}
-        </div>
+      <nav className='mb-8 flex justify-center'>
+        <SegmentedTabs
+          options={MARKET_TAB_OPTIONS}
+          value={activeMarket}
+          onChange={handleMarketChange}
+        />
       </nav>
 
       <section>
@@ -323,20 +308,20 @@ export default function LicensesPage() {
           </div>
         ) : data && data.length > 0 ? (
           <>
-            <div className='bg-white border border-gray-200 rounded-lg p-4 mb-4'>
-              <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3'>
+            <div className='bg-white border border-gray-200 rounded-xl p-5 mb-4'>
+              <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'>
                 {FILTER_FIELDS.map((field) => (
                   <div key={field.key}>
                     <label
                       htmlFor={`filter-${field.key}`}
-                      className='block text-xs font-medium text-gray-500 mb-1'
+                      className='block text-xs font-medium text-gray-500 mb-1.5'
                     >
                       {field.label}
                     </label>
                     <input
                       id={`filter-${field.key}`}
                       type='text'
-                      className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
+                      className='block w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple transition-colors'
                       placeholder={field.placeholder}
                       value={filters[field.key]}
                       onChange={(e) =>
@@ -348,13 +333,13 @@ export default function LicensesPage() {
                 <div>
                   <label
                     htmlFor='filter-durum'
-                    className='block text-xs font-medium text-gray-500 mb-1'
+                    className='block text-xs font-medium text-gray-500 mb-1.5'
                   >
                     Durum
                   </label>
                   <select
                     id='filter-durum'
-                    className='block w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
+                    className='block w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple transition-colors'
                     value={filters.durum}
                     onChange={(e) =>
                       handleFilterChange('durum', e.target.value)
