@@ -43,13 +43,16 @@ export default function LicenseTable({
     onPageChange(Math.max(1, Math.min(page, totalPages)))
   }
 
-  function displayStatus(status: string, hasTransferred?: boolean) {
+  function displayStatus(status: string) {
     const normalized = status.toUpperCase().replace(/\s+/g, '_')
-    const label = STATUS_LABELS[normalized] || status
-    // Only worth flagging on an active license -- one that's since been
-    // cancelled/terminated already shows a status distinct from
-    // "Yürürlükte", so there's nothing to disambiguate there.
-    return normalized === 'ONAYLANDI' && hasTransferred ? `${label} (Devir)` : label
+    return STATUS_LABELS[normalized] || status
+  }
+
+  // Only worth flagging on an active license -- one that's since been
+  // cancelled/terminated already shows a status distinct from
+  // "Yürürlükte", so there's nothing to disambiguate there.
+  function showsTransferMark(status: string, hasTransferred?: boolean) {
+    return status.toUpperCase().replace(/\s+/g, '_') === 'ONAYLANDI' && hasTransferred
   }
 
   function badgeClass(status: string) {
@@ -72,13 +75,20 @@ export default function LicenseTable({
     switch (key) {
       case 'lisansDurumu':
         return (
-          <span
-            className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
-              item.lisansDurumu
-            )}`}
-          >
-            {displayStatus(item.lisansDurumu, item.hasTransferred)}
-          </span>
+          <div className='flex flex-col items-start gap-0.5'>
+            <span
+              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
+                item.lisansDurumu
+              )}`}
+            >
+              {displayStatus(item.lisansDurumu)}
+            </span>
+            {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
+              <span className='text-[10px] font-medium text-brand-purple'>
+                (Devir)
+              </span>
+            )}
+          </div>
         )
       case 'lisansSahibiUnvani':
         return item.lisansSahibiUnvani
