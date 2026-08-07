@@ -1,12 +1,6 @@
 import { useNewsFeed } from '../hooks/useNewsFeed'
 import { useState } from 'react'
-import {
-  NewspaperIcon,
-  ClockIcon,
-  FireIcon,
-  BoltIcon,
-  SunIcon,
-} from '@heroicons/react/24/outline'
+import { NewspaperIcon, GlobeAltIcon, FlagIcon } from '@heroicons/react/24/outline'
 
 export default function NewsPage() {
   const { news, loading, error } = useNewsFeed()
@@ -20,12 +14,14 @@ export default function NewsPage() {
   const featuredNews = filteredNews?.[0]
   const remainingNews = filteredNews?.slice(1, visibleNewsCount)
 
+  // Matches the real category values api/news.ts actually sends
+  // (Türkiye: Bloomberg HT + CNN Türk, energy-filtered; Global Enerji:
+  // OilPrice.com) -- the previous list (Güncel/Petrol/Elektrik/
+  // Yenilenebilir) never matched any real item's category.
   const categories = [
     { name: 'Tümü', icon: <NewspaperIcon className='h-4 w-4' /> },
-    { name: 'Güncel', icon: <ClockIcon className='h-4 w-4' /> },
-    { name: 'Petrol', icon: <FireIcon className='h-4 w-4' /> },
-    { name: 'Elektrik', icon: <BoltIcon className='h-4 w-4' /> },
-    { name: 'Yenilenebilir', icon: <SunIcon className='h-4 w-4' /> },
+    { name: 'Türkiye', icon: <FlagIcon className='h-4 w-4' /> },
+    { name: 'Global Enerji', icon: <GlobeAltIcon className='h-4 w-4' /> },
   ]
 
   return (
@@ -99,7 +95,7 @@ export default function NewsPage() {
                   </div>
                   <div className='p-6 md:p-8'>
                     <div className='text-xs font-medium text-gray-500'>
-                      {featuredNews.category} · Öne Çıkan
+                      {featuredNews.source} · {featuredNews.category} · Öne Çıkan
                     </div>
                     <a
                       href={featuredNews.link}
@@ -112,10 +108,9 @@ export default function NewsPage() {
                     <p className='mt-2 text-sm text-gray-500'>
                       {featuredNews.date}
                     </p>
-                    <div
-                      className='mt-4 text-gray-600 text-sm prose prose-sm max-w-none'
-                      dangerouslySetInnerHTML={{ __html: featuredNews.excerpt }}
-                    />
+                    <p className='mt-4 text-gray-600 text-sm'>
+                      {featuredNews.excerpt}
+                    </p>
                     <a
                       href={featuredNews.link}
                       target='_blank'
@@ -155,7 +150,9 @@ export default function NewsPage() {
                   </div>
                   <div className='p-5'>
                     <div className='flex items-center text-xs text-gray-500 mb-2'>
-                      <span className='font-medium'>{item.category}</span>
+                      <span className='font-medium'>{item.source}</span>
+                      <span className='mx-1.5'>·</span>
+                      <span>{item.category}</span>
                       <span className='mx-1.5'>·</span>
                       <span>{item.date}</span>
                     </div>
@@ -167,10 +164,9 @@ export default function NewsPage() {
                     >
                       {item.title}
                     </a>
-                    <div
-                      className='text-gray-600 text-sm line-clamp-3 mb-3 prose prose-sm max-w-none'
-                      dangerouslySetInnerHTML={{ __html: item.excerpt }}
-                    />
+                    <p className='text-gray-600 text-sm line-clamp-3 mb-3'>
+                      {item.excerpt}
+                    </p>
                     <a
                       href={item.link}
                       target='_blank'

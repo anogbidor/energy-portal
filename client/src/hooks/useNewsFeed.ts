@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 
-interface NewsItem {
+export interface NewsItem {
   title: string
   date: string
   category: string
+  source: string
   excerpt: string
+  // Absolute URL for an external article, or a relative in-app path
+  // (e.g. /license/detail?...) for an EPDK activity item -- callers
+  // should route these differently (external <a target=_blank> vs
+  // React Router <Link>).
   link: string
-  imageUrl?: string // Added for image support
+  imageUrl?: string | null
 }
 
 interface UseNewsFeedResult {
@@ -15,59 +20,42 @@ interface UseNewsFeedResult {
   error: string | null
 }
 
-interface RssItem {
-  title: string
-  pubDate: string
-  categories?: string[]
-  description: string
-  link: string
-  enclosure?: {
-    url: string
-  }
-  thumbnail?: string
-}
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || ''
 
 // Both Home and News independently call this hook -- without a shared
-// cache, navigating between them (or back to either) re-hits the
-// external RSS proxy and re-shows a loading state every single time,
-// even though the feed only changes a few times a day at most.
+// cache, navigating between them (or back to either) re-hits the API
+// and re-shows a loading state every single time, even though the
+// backend itself already caches for 30 min (see api/news.ts).
 let cache: NewsItem[] | null = null
 let inFlight: Promise<NewsItem[]> | null = null
+
+function formatDate(value: string): string {
+  try {
+    return new Date(value).toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  } catch {
+    return value
+  }
+}
 
 async function fetchNewsFeed(): Promise<NewsItem[]> {
   if (inFlight) return inFlight
 
   inFlight = (async () => {
-    const rssResponse = await fetch(
-      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-        'https://rss.app/feeds/PyqkAjCkWNmw1ejj.xml'
-      )}`
-    )
+    const res = await fetch(`${API_BASE_URL}/api/news`)
+    const json = await res.json()
+    if (!json.success) throw new Error(json.error || 'API error')
 
-    if (!rssResponse.ok) {
-      throw new Error(`RSS feed error (${rssResponse.status})`)
-    }
-
-    const rssData = await rssResponse.json()
-
-    if (rssData.status !== 'ok') {
-      throw new Error(rssData.message || 'Invalid RSS feed')
-    }
-
-    const transformedNews = rssData.items.map((item: RssItem) => ({
-      title: item.title || 'Başlıksız Haber',
-      date:
-        formatRssDate(item.pubDate) || new Date().toLocaleDateString('tr-TR'),
-      category: item.categories?.[0] || 'Genel',
-      excerpt:
-        stripHtml(item.description).substring(0, 200) + '...' ||
-        'Açıklama yok',
-      link: item.link || '#',
-      imageUrl: getImageUrl(item),
+    const items = (json.data as NewsItem[]).map((item) => ({
+      ...item,
+      date: formatDate(item.date),
     }))
 
-    cache = transformedNews
-    return transformedNews
+    cache = items
+    return items
   })()
 
   try {
@@ -91,7 +79,7 @@ export function useNewsFeed(): UseNewsFeedResult {
       })
       .catch((err) => {
         if (cancelled) return
-        console.error('❌ Haber alınamadı:', err)
+        console.error('Haber alınamadı:', err)
         if (!cache) setError(err instanceof Error ? err.message : 'Bilinmeyen hata')
       })
       .finally(() => {
@@ -104,29 +92,4 @@ export function useNewsFeed(): UseNewsFeedResult {
   }, [])
 
   return { news, loading, error }
-}
-
-// Helper function to strip HTML tags
-function stripHtml(html: string): string {
-  if (!html) return ''
-  return html.replace(/<[^>]*>?/gm, '')
-}
-
-// Helper to extract image URL from RSS item
-function getImageUrl(item: RssItem): string | undefined {
-  return item.enclosure?.url || item.thumbnail || undefined
-}
-
-// Helper to format RSS date to Turkish locale
-function formatRssDate(dateString: string): string {
-  if (!dateString) return ''
-  try {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-  } catch {
-    return dateString
-  }
 }

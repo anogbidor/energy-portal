@@ -16,6 +16,7 @@ import PriceTicker from '../components/PriceTicker'
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
   const featuredNews = useMemo(() => news?.slice(0, 3) || [], [news])
+  const moreNews = useMemo(() => news?.slice(3, 9) || [], [news])
   const [currentSlide, setCurrentSlide] = useState(0)
 
   // Auto-rotate slides
@@ -106,7 +107,7 @@ export default function Home() {
                           <div className='bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200'>
                             <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
                               <span className='text-xs font-semibold text-gray-500'>
-                                {item.category || 'GENEL'}
+                                {item.source} · {item.category || 'GENEL'}
                               </span>
                               <span className='text-xs text-gray-500'>
                                 {item.date}
@@ -118,13 +119,15 @@ export default function Home() {
                             <p className='text-gray-600 mb-4 line-clamp-2'>
                               {item.excerpt}
                             </p>
-                            <Link
-                              to={item.link}
+                            <a
+                              href={item.link}
+                              target='_blank'
+                              rel='noopener noreferrer'
                               className='text-gray-900 hover:text-gray-600 text-sm font-medium flex items-center'
                             >
                               Haberin Devamı
                               <ArrowRightIcon className='h-4 w-4 ml-1' />
-                            </Link>
+                            </a>
                           </div>
                         </div>
                       ))}
@@ -171,6 +174,32 @@ export default function Home() {
                         />
                       ))}
                     </div>
+                  )}
+
+                  {/* More headlines below the carousel */}
+                  {moreNews.length > 0 && (
+                    <ul className='mt-6 pt-6 border-t border-gray-100 divide-y divide-gray-100'>
+                      {moreNews.map((item) => (
+                        <li key={`${item.title}-${item.date}`} className='py-3'>
+                          <a
+                            href={item.link}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='flex items-start justify-between gap-4 group'
+                          >
+                            <div className='min-w-0'>
+                              <p className='text-sm font-medium text-gray-900 group-hover:text-brand-purple transition-colors truncate'>
+                                {item.title}
+                              </p>
+                              <p className='text-xs text-gray-500 mt-0.5'>
+                                {item.source} · {item.date}
+                              </p>
+                            </div>
+                            <ArrowRightIcon className='h-4 w-4 text-gray-300 group-hover:text-brand-purple transition-colors flex-shrink-0 mt-0.5' />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               )}
