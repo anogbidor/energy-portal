@@ -1,3 +1,4 @@
+import type { ReactElement, SVGProps } from 'react'
 import {
   CurrencyDollarIcon,
   CurrencyEuroIcon,
@@ -9,7 +10,7 @@ import { useLiveData } from '../hooks/useLiveData'
 // are hand-drawn in the same 24x24 outline style (stroke=currentColor,
 // round joins) as the Heroicons set used everywhere else on the site,
 // so they sit naturally next to CurrencyDollarIcon etc. below.
-function FuelPumpIcon(props: React.SVGProps<SVGSVGElement>) {
+function FuelPumpIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox='0 0 24 24'
@@ -28,7 +29,7 @@ function FuelPumpIcon(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-function OilBarrelIcon(props: React.SVGProps<SVGSVGElement>) {
+function OilBarrelIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox='0 0 24 24'
@@ -48,7 +49,7 @@ function OilBarrelIcon(props: React.SVGProps<SVGSVGElement>) {
 
 type TickerKind = 'fuel' | 'brent' | 'usd' | 'eur' | 'gbp'
 
-const ICONS: Record<TickerKind, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
+const ICONS: Record<TickerKind, (props: SVGProps<SVGSVGElement>) => ReactElement> = {
   fuel: FuelPumpIcon,
   brent: OilBarrelIcon,
   usd: CurrencyDollarIcon,
