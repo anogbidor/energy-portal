@@ -86,20 +86,20 @@ export default function LicenseSummaryTable() {
       ) : (
         <div className='overflow-x-auto'>
           <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
+            <thead>
               <tr>
-                <th className='px-3 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wide'>
+                <th className='px-3 py-2 text-left text-xs font-medium text-gray-500'>
                   Tarih
                 </th>
                 {MARKET_COLUMNS.map((col) => (
                   <th
                     key={col.key}
-                    className='px-2 py-1.5 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wide'
+                    className='px-2 py-2 text-center text-xs font-medium text-gray-500'
                   >
                     {col.label}
                   </th>
                 ))}
-                <th className='px-3 py-1.5 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wide'>
+                <th className='px-3 py-2 text-center text-xs font-medium text-gray-500'>
                   Toplam
                 </th>
               </tr>
@@ -121,7 +121,7 @@ export default function LicenseSummaryTable() {
                 )
                 return (
                   <tr key={day.date} className='hover:bg-gray-50'>
-                    <td className='px-3 py-1.5 whitespace-nowrap text-xs text-gray-700 capitalize'>
+                    <td className='px-3 py-2 whitespace-nowrap text-xs text-gray-700 capitalize'>
                       {formatDate(day.date)}
                     </td>
                     {MARKET_COLUMNS.map((col) => {
@@ -165,7 +165,7 @@ export default function LicenseSummaryTable() {
                         </td>
                       )
                     })}
-                    <td className='px-3 py-1.5 text-center text-xs font-medium text-gray-900 whitespace-nowrap'>
+                    <td className='px-3 py-2 text-center text-xs font-medium text-gray-900 whitespace-nowrap'>
                       {totalIssued > 0 && (
                         <span className='text-green-700'>+{totalIssued}</span>
                       )}
