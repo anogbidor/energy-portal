@@ -30,6 +30,40 @@ function ageString(ms: number): string {
   return `${(hours / 24).toFixed(1)}d`
 }
 
+// The distributor-license cron only runs 08:00-19:59 Europe/Istanbul
+// (see ingest-licenses.yml / the matching cron-job.org schedule) --
+// EPDK doesn't publish anything overnight, so there's a real, expected
+// 12+ hour gap between the last tick before 20:00 and the first tick
+// at 08:00 the next day. Checking a flat "ran in the last 90 minutes"
+// threshold around the clock would flag this every single evening even
+// though nothing is wrong -- confirmed directly: cron-job.org's own
+// history showed unbroken 15-minute ticks all day with zero gaps, right
+// up to the window's last one at 19:45, which is exactly what this
+// check was flagging as "stalled." A 20-minute grace period after
+// 08:00 absorbs the first tick's normal startup lag.
+function isDagiticiActiveWindow(): boolean {
+  const istanbulHour = Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Istanbul',
+      hour: 'numeric',
+      hour12: false,
+      minute: 'numeric',
+    })
+      .formatToParts(new Date())
+      .find((p) => p.type === 'hour')?.value
+  )
+  const istanbulMinute = Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Istanbul',
+      minute: 'numeric',
+    })
+      .formatToParts(new Date())
+      .find((p) => p.type === 'minute')?.value
+  )
+  const minutesSinceMidnight = istanbulHour * 60 + istanbulMinute
+  return minutesSinceMidnight >= 8 * 60 + 20 && minutesSinceMidnight < 20 * 60
+}
+
 export async function checkIngestionHealth(): Promise<{
   healthy: boolean
   checks: HealthCheck[]
@@ -38,7 +72,11 @@ export async function checkIngestionHealth(): Promise<{
   const checks: HealthCheck[] = []
   const now = Date.now()
 
-  // Distributor (dagitici) ingestion -- one check per market.
+  // Distributor (dagitici) ingestion -- one check per market. Only
+  // enforced during the cron's own active window (see
+  // isDagiticiActiveWindow) -- outside it, a gap is expected, not a
+  // problem.
+  const dagiticiWindowActive = isDagiticiActiveWindow()
   for (const { market } of DISTRIBUTOR_SERVICES) {
     const { data } = await supabase
       .from('ingestion_runs')
@@ -52,11 +90,14 @@ export async function checkIngestionHealth(): Promise<{
 
     const finishedAt = data?.finished_at ? new Date(data.finished_at).getTime() : null
     const age = finishedAt ? now - finishedAt : Infinity
+    const withinThreshold = age <= DAGITICI_MAX_AGE_MS
     checks.push({
       name: `dagitici-ingest-${market}`,
-      ok: age <= DAGITICI_MAX_AGE_MS,
+      ok: !dagiticiWindowActive || withinThreshold,
       detail: finishedAt
-        ? `last success ${ageString(age)} ago`
+        ? `last success ${ageString(age)} ago${
+            !dagiticiWindowActive ? ' (outside active hours, not enforced)' : ''
+          }`
         : 'never succeeded',
     })
   }
