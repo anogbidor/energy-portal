@@ -14,6 +14,17 @@ export function applyCors(req: NextApiRequest, res: NextApiResponse) {
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  // Access-Control-Allow-Origin above varies per request, but these
+  // routes also set Cache-Control (see applyPublicCache) so Vercel's
+  // edge caches the whole response -- without Vary, a request from one
+  // origin (or no origin at all, e.g. a health check or cron ping)
+  // populates the cache with its own Allow-Origin value, and every
+  // other origin then gets served that same stale response until it
+  // expires. Confirmed directly: a no-Origin curl right before a real
+  // browser request left the browser's request answered with either no
+  // Allow-Origin header at all or the wrong one, which the browser
+  // reports simply as "Failed to fetch" with no further detail.
+  res.setHeader('Vary', 'Origin')
 }
 
 // Lets Vercel's edge network serve repeat requests for the same URL
