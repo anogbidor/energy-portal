@@ -11,6 +11,7 @@ import { useNewsFeed } from '../hooks/useNewsFeed'
 import ErrorMessage from '../components/ErrorMessage'
 import MarketsSideBar from '../components/MarketsSideBar'
 import LicenseSummaryTable from '../components/LicenseSummaryTable'
+import PriceTicker from '../components/PriceTicker'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
@@ -176,6 +177,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PriceTicker />
     </div>
   )
 }

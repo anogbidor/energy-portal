@@ -75,7 +75,7 @@ export default function LicenseTable({
     switch (key) {
       case 'lisansDurumu':
         return (
-          <div className='flex flex-col items-start gap-0.5'>
+          <div className='flex flex-col items-center gap-0.5'>
             <span
               className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
                 item.lisansDurumu
@@ -85,7 +85,7 @@ export default function LicenseTable({
             </span>
             {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
               <span className='text-[10px] font-medium text-brand-purple'>
-                (Devir)
+                Transfer
               </span>
             )}
           </div>
