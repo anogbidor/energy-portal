@@ -19,8 +19,8 @@ export interface LicenseItem {
   satisiYapilacakYakitTurleri?: string[]
   // True when this license has a distributor-transfer event in its
   // history even though its own status stayed ONAYLANDI throughout --
-  // lets the table show "Yürürlükte (Devir)" instead of plain
-  // "Yürürlükte" for a license that changed hands.
+  // lets the table show a "Transfer Edildi" marker under "Yürürlükte"
+  // for a license that changed hands.
   hasTransferred?: boolean
 }
 

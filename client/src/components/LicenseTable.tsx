@@ -1,8 +1,9 @@
-// import React from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LicenseItem, Market } from '../hooks/useLicenses'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
 import { prefetchLicenseDetail } from '../hooks/useLicenseDetail'
+import { isTransferViewed, markTransferViewed } from '../lib/viewedTransfers'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -33,6 +34,15 @@ export default function LicenseTable({
 }: LicenseTableProps) {
   const navigate = useNavigate()
   const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  // localStorage doesn't trigger a re-render on its own -- this just
+  // forces one immediately after a click marks a license viewed, so its
+  // glow disappears right away instead of only on the next page load.
+  const [, forceRerender] = useState(0)
+  const markViewed = (lisansNo: string) => {
+    markTransferViewed(lisansNo)
+    forceRerender((n) => n + 1)
+  }
 
   const getSortIndicator = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) return null
@@ -84,8 +94,12 @@ export default function LicenseTable({
               {displayStatus(item.lisansDurumu)}
             </span>
             {showsTransferMark(item.lisansDurumu, item.hasTransferred) && (
-              <span className='text-[10px] font-medium text-brand-purple'>
-                Transfer
+              <span
+                className={`text-[10px] font-medium text-brand-purple rounded-full ${
+                  isTransferViewed(item.lisansNo) ? '' : 'glow-pulse'
+                }`}
+              >
+                Transfer Edildi
               </span>
             )}
           </div>
@@ -168,12 +182,14 @@ export default function LicenseTable({
                     key={`${item.lisansNo}-${i}`}
                     onClick={
                       market
-                        ? () =>
+                        ? () => {
+                            markViewed(item.lisansNo)
                             navigate(
                               `/license/detail?market=${
                                 (item as { market?: string }).market ?? market
                               }&lisansNo=${encodeURIComponent(item.lisansNo)}`
                             )
+                          }
                         : undefined
                     }
                     onMouseEnter={
