@@ -1,7 +1,8 @@
+import { useState, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LicenseItem, Market } from '../hooks/useLicenses'
 import { STATUS_LABELS, STATUS_BADGE_CLASS } from '../lib/licenseStatus'
-import { prefetchLicenseDetail } from '../hooks/useLicenseDetail'
+import { prefetchLicenseDetail, resolveDistributor } from '../hooks/useLicenseDetail'
 
 type SortConfig = { key: string; direction: 'asc' | 'desc' } | null
 
@@ -32,6 +33,32 @@ export default function LicenseTable({
 }: LicenseTableProps) {
   const navigate = useNavigate()
   const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  // Tracks which Şirket cell is mid-lookup so a slow connection shows
+  // something instead of a dead click, and so a second click on the
+  // same name while it's still resolving is a no-op rather than firing
+  // a duplicate request.
+  const [resolvingSirket, setResolvingSirket] = useState<string | null>(null)
+
+  const handleSirketClick = async (
+    event: MouseEvent,
+    itemMarket: Market,
+    unvan: string
+  ) => {
+    event.stopPropagation()
+    if (resolvingSirket === unvan) return
+    setResolvingSirket(unvan)
+    try {
+      const lisansNo = await resolveDistributor(itemMarket, unvan)
+      if (lisansNo) {
+        navigate(
+          `/license/detail?market=${itemMarket}&lisansNo=${encodeURIComponent(lisansNo)}`
+        )
+      }
+    } finally {
+      setResolvingSirket(null)
+    }
+  }
 
   const getSortIndicator = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) return null
@@ -97,8 +124,26 @@ export default function LicenseTable({
             )}
           </div>
         )
-      case 'dagitimSirketi':
-        return item.dagitimSirketi || <span className='text-gray-300'>-</span>
+      case 'dagitimSirketi': {
+        if (!item.dagitimSirketi) return <span className='text-gray-300'>-</span>
+        const itemMarket = ((item as { market?: string }).market ?? market) as
+          | Market
+          | undefined
+        if (!itemMarket) return item.dagitimSirketi
+        const isResolving = resolvingSirket === item.dagitimSirketi
+        return (
+          <button
+            type='button'
+            onClick={(e) =>
+              handleSirketClick(e, itemMarket, item.dagitimSirketi as string)
+            }
+            disabled={isResolving}
+            className='text-brand-purple hover:text-brand-purple-dark hover:underline text-left disabled:opacity-50 disabled:no-underline'
+          >
+            {isResolving ? 'Açılıyor…' : item.dagitimSirketi}
+          </button>
+        )
+      }
       case 'lisansSahibiUnvani':
         return item.lisansSahibiUnvani
       case 'lisansNo':

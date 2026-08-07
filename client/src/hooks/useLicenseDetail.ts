@@ -143,3 +143,21 @@ export async function fetchNetworkCount(
   if (!json.success) return null
   return json.data.networkCount ?? null
 }
+
+// Bayi records never carry the distributor's own lisans_no (EPDK's
+// bayilik endpoint only sends the distributor's name, never a license
+// number for them) -- clicking a "Şirket" name in the list needs this
+// to resolve somewhere real to navigate to.
+export async function resolveDistributor(
+  market: Market,
+  unvan: string
+): Promise<string | null> {
+  const res = await fetch(
+    `${API_BASE_URL}/api/resolve-distributor?market=${market}&unvan=${encodeURIComponent(
+      unvan
+    )}`
+  )
+  const json = await res.json()
+  if (!json.success) return null
+  return json.lisansNo ?? null
+}
