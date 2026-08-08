@@ -1,5 +1,6 @@
 // 🔹 src/App.tsx
 import { useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import AppRoutes from './routes/AppRoutes'
@@ -21,6 +22,7 @@ function App() {
         <AppRoutes />
       </main>
       <Footer />
+      <Analytics />
     </div>
   )
 }

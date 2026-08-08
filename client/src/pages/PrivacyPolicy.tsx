@@ -22,12 +22,27 @@ export default function PrivacyPolicy() {
             <h2 className='text-base font-semibold text-gray-900 mb-2'>
               Topladığımız veriler
             </h2>
-            <p>Sitede kullanıcı hesabı veya giriş sistemi bulunmamaktadır. Topladığımız tek kişisel veri:</p>
+            <p>Sitede kullanıcı hesabı veya giriş sistemi bulunmamaktadır. Topladığımız veriler:</p>
             <ul className='list-disc pl-5 mt-2 space-y-1'>
               <li>
                 <strong>E-posta bülten kaydı</strong> — yalnızca site
                 altbilgisindeki bülten formunu dolduran ziyaretçilerin
                 e-posta adresi, güncelleme göndermek amacıyla saklanır.
+              </li>
+              <li>
+                <strong>Reklam/iş birliği formu</strong> — "Reklam Ver"
+                sayfasındaki formu dolduranların ad, e-posta, şirket
+                (opsiyonel) ve mesaj bilgisi, yalnızca talebinize dönüş
+                yapmak amacıyla saklanır.
+              </li>
+              <li>
+                <strong>Anonim ziyaret istatistikleri</strong> — Vercel
+                Analytics ile toplanan, kimliklendirici bilgi içermeyen
+                toplu sayfa görüntüleme verileri (bkz.{' '}
+                <a href='/cerez-politikasi' className='text-brand-purple hover:underline'>
+                  Çerez Politikası
+                </a>
+                ).
               </li>
               <li>
                 <strong>Standart sunucu günlükleri</strong> — barındırma

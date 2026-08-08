@@ -8,10 +8,25 @@ export default function CookiePolicy() {
         <div className='mt-8 space-y-8 text-sm text-gray-700 leading-relaxed'>
           <section className='bg-green-50 border border-green-200 rounded-lg p-4'>
             <p className='text-green-800'>
-              Bu web sitesi şu anda hiçbir izleme çerezi (tracking cookie)
-              veya reklam çerezi kullanmamaktadır. Ayrıca tarayıcınızın
-              yerel depolama alanını (localStorage) kişisel veri veya
-              kullanım geçmişi saklamak için kullanmıyoruz.
+              Bu web sitesi hiçbir izleme çerezi (tracking cookie), reklam
+              çerezi veya kimliklendirici çerez kullanmamaktadır.
+              Tarayıcınızın yerel depolama alanını (localStorage) da kişisel
+              veri veya kullanım geçmişi saklamak için kullanmıyoruz.
+            </p>
+          </section>
+
+          <section>
+            <h2 className='text-base font-semibold text-gray-900 mb-2'>
+              Ziyaretçi sayısı ölçümü
+            </h2>
+            <p>
+              Site trafiğini anlamak için Vercel Analytics kullanıyoruz. Bu
+              araç, tasarımı gereği çerez kullanmaz ve ziyaretçileri
+              tek tek tanımlamaz (IP adresi saklanmaz, kalıcı bir
+              kimlik oluşturulmaz) — yalnızca toplu, anonim ziyaret
+              istatistikleri (kaç kişi, hangi sayfayı, ne zaman)
+              üretir. Bu nedenle bir çerez onay bandırolu
+              gerektirmiyor.
             </p>
           </section>
 
@@ -33,10 +48,9 @@ export default function CookiePolicy() {
               Bu durum değişirse
             </h2>
             <p>
-              İleride site performansını ölçmek için analiz araçları
-              eklersek (örneğin ziyaretçi sayısı istatistikleri), bu
-              sayfa güncellenecek ve hangi çerezlerin/araçların
-              kullanıldığı burada açıkça belirtilecektir.
+              İleride çerez kullanan bir araç eklersek (örneğin
+              kimliklendirici bir reklam veya oturum çerezi), bu sayfa
+              güncellenecek ve gerekli onay mekanizması eklenecektir.
             </p>
           </section>
         </div>

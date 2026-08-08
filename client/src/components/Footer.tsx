@@ -22,6 +22,7 @@ const distributorSummaryLinks = [
 ]
 
 const legalLinks = [
+  { path: '/reklam', name: 'Reklam Ver' },
   { path: '/gizlilik-politikasi', name: 'Gizlilik Politikası' },
   { path: '/cerez-politikasi', name: 'Çerez Politikası' },
 ]
@@ -166,7 +167,7 @@ export default function Footer() {
             </div>
             <div>
               <h3 className='text-xs font-semibold text-gray-300 uppercase tracking-wide mb-3'>
-                Yasal
+                Kurumsal
               </h3>
               <nav className='flex flex-col gap-2 text-sm'>
                 {legalLinks.map((link) => (
