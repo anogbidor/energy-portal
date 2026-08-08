@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
 import AppRoutes from './routes/AppRoutes'
 import { prefetchLicenses } from './hooks/useLicenses'
 
@@ -17,6 +18,7 @@ function App() {
 
   return (
     <div className='min-h-screen flex flex-col'>
+      <ScrollToTop />
       <Navbar />
       <main className='flex-grow'>
         <AppRoutes />
