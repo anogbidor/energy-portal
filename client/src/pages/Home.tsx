@@ -118,30 +118,45 @@ export default function Home() {
                           key={`${item.title}-${item.date}`}
                           className='w-full flex-shrink-0'
                         >
-                          <div className='bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200'>
-                            <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
-                              <span className='text-xs font-semibold text-gray-500'>
-                                {item.source} · {item.category || 'GENEL'}
-                              </span>
-                              <span className='text-xs text-gray-500'>
-                                {item.date}
-                              </span>
+                          <div className='bg-gray-50 rounded-lg border border-gray-200 overflow-hidden sm:flex'>
+                            {item.imageUrl && (
+                              <div className='sm:w-2/5 flex-shrink-0'>
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.title}
+                                  className='h-48 sm:h-full w-full object-cover'
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.style.display = 'none'
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div className='p-4 sm:p-6 flex-1 min-w-0'>
+                              <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
+                                <span className='text-xs font-semibold text-gray-500'>
+                                  {item.source} · {item.category || 'GENEL'}
+                                </span>
+                                <span className='text-xs text-gray-500'>
+                                  {item.date}
+                                </span>
+                              </div>
+                              <h3 className='text-lg sm:text-xl font-bold text-gray-900 mb-3'>
+                                {item.title}
+                              </h3>
+                              <p className='text-gray-600 mb-4 line-clamp-2'>
+                                {item.excerpt}
+                              </p>
+                              <a
+                                href={item.link}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='text-gray-900 hover:text-gray-600 text-sm font-medium flex items-center'
+                              >
+                                Haberin Devamı
+                                <ArrowRightIcon className='h-4 w-4 ml-1' />
+                              </a>
                             </div>
-                            <h3 className='text-lg sm:text-xl font-bold text-gray-900 mb-3'>
-                              {item.title}
-                            </h3>
-                            <p className='text-gray-600 mb-4 line-clamp-2'>
-                              {item.excerpt}
-                            </p>
-                            <a
-                              href={item.link}
-                              target='_blank'
-                              rel='noopener noreferrer'
-                              className='text-gray-900 hover:text-gray-600 text-sm font-medium flex items-center'
-                            >
-                              Haberin Devamı
-                              <ArrowRightIcon className='h-4 w-4 ml-1' />
-                            </a>
                           </div>
                         </div>
                       ))}
