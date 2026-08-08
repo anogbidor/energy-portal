@@ -1,11 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useMemo, useState, useEffect } from 'react'
-import {
-  ArrowRightIcon,
-  NewspaperIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/outline'
+import { useMemo } from 'react'
+import { ArrowRightIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import Hero from '../components/Hero'
 import { useNewsFeed } from '../hooks/useNewsFeed'
 import ErrorMessage from '../components/ErrorMessage'
@@ -31,27 +26,6 @@ export default function Home() {
     const featuredLinks = new Set(featuredNews.map((item) => item.link))
     return (news ?? []).filter((item) => !featuredLinks.has(item.link)).slice(0, 6)
   }, [news, featuredNews])
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  // Auto-rotate slides
-  useEffect(() => {
-    if (featuredNews.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % featuredNews.length)
-      }, 5000)
-      return () => clearInterval(interval)
-    }
-  }, [featuredNews])
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % featuredNews.length)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide(
-      (prev) => (prev - 1 + featuredNews.length) % featuredNews.length
-    )
-  }
 
   return (
     <div className='bg-gray-50 min-h-screen'>
@@ -104,108 +78,53 @@ export default function Home() {
                   Henüz haber bulunmamaktadır
                 </div>
               ) : (
-                <div className='relative'>
-                  {/* Carousel Container */}
-                  <div className='relative overflow-hidden rounded-lg'>
-                    <div
-                      className='flex transition-transform duration-300 ease-in-out'
-                      style={{
-                        transform: `translateX(-${currentSlide * 100}%)`,
-                      }}
-                    >
-                      {featuredNews.map((item) => (
-                        <div
-                          key={`${item.title}-${item.date}`}
-                          className='w-full flex-shrink-0'
-                        >
-                          <div className='bg-gray-50 rounded-lg border border-gray-200 overflow-hidden sm:flex'>
-                            {item.imageUrl && (
-                              <div className='sm:w-2/5 flex-shrink-0'>
-                                <img
-                                  src={item.imageUrl}
-                                  alt={item.title}
-                                  className='h-48 sm:h-full w-full object-cover'
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement
-                                    target.style.display = 'none'
-                                  }}
-                                />
-                              </div>
-                            )}
-                            <div className='p-4 sm:p-6 flex-1 min-w-0'>
-                              <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2'>
-                                <span className='text-xs font-semibold text-gray-500'>
-                                  {item.source} · {item.category || 'GENEL'}
-                                </span>
-                                <span className='text-xs text-gray-500'>
-                                  {item.date}
-                                </span>
-                              </div>
-                              <h3 className='text-lg sm:text-xl font-bold text-gray-900 mb-3'>
-                                {item.title}
-                              </h3>
-                              <p className='text-gray-600 mb-4 line-clamp-2'>
-                                {item.excerpt}
-                              </p>
-                              <a
-                                href={item.link}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='text-gray-900 hover:text-gray-600 text-sm font-medium flex items-center'
-                              >
-                                Haberin Devamı
-                                <ArrowRightIcon className='h-4 w-4 ml-1' />
-                              </a>
-                            </div>
+                <div>
+                  {/* Featured grid -- image-having items, most recent first */}
+                  <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+                    {featuredNews.map((item) => (
+                      <a
+                        key={`${item.title}-${item.date}`}
+                        href={item.link}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='group bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:border-gray-300 transition-colors flex flex-col'
+                      >
+                        {item.imageUrl && (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className='h-40 w-full object-cover'
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                            }}
+                          />
+                        )}
+                        <div className='p-4 flex flex-col flex-1'>
+                          <div className='flex items-center justify-between gap-2 mb-2'>
+                            <span className='text-xs font-semibold text-gray-500'>
+                              {item.source}
+                            </span>
+                            <span className='text-xs text-gray-500'>
+                              {item.date}
+                            </span>
                           </div>
+                          <h3 className='text-base font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-brand-purple transition-colors'>
+                            {item.title}
+                          </h3>
+                          <p className='text-sm text-gray-600 line-clamp-2 mb-3'>
+                            {item.excerpt}
+                          </p>
+                          <span className='text-gray-900 group-hover:text-brand-purple text-sm font-medium flex items-center mt-auto transition-colors'>
+                            Haberin Devamı
+                            <ArrowRightIcon className='h-4 w-4 ml-1' />
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                      </a>
+                    ))}
                   </div>
 
-                  {/* Navigation Arrows */}
-                  {featuredNews.length > 1 && (
-                    <>
-                      <button
-                        title='Onceki Haber'
-                        type='button'
-                        onClick={prevSlide}
-                        className='absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10'
-                        aria-label='Önceki haber'
-                      >
-                        <ChevronLeftIcon className='h-5 w-5 text-gray-600' />
-                      </button>
-                      <button
-                        title='Sonraki Haber'
-                        type='button'
-                        onClick={nextSlide}
-                        className='absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors z-10'
-                        aria-label='Sonraki haber'
-                      >
-                        <ChevronRightIcon className='h-5 w-5 text-gray-600' />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Navigation Dots */}
-                  {featuredNews.length > 1 && (
-                    <div className='flex justify-center mt-4 sm:mt-6 space-x-2'>
-                      {featuredNews.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            currentSlide === index
-                              ? 'w-6 bg-brand-purple'
-                              : 'w-1.5 bg-gray-300'
-                          }`}
-                          aria-label={`${index + 1}. habere git`}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* More headlines below the carousel */}
+                  {/* More headlines below the grid */}
                   {moreNews.length > 0 && (
                     <ul className='mt-6 pt-6 border-t border-gray-100 divide-y divide-gray-100'>
                       {moreNews.map((item) => (
