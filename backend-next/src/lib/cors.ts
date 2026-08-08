@@ -5,6 +5,8 @@ const ALLOWED_ORIGINS = [
   'https://energy-portal-six.vercel.app',
   'https://energy-portal-stage1.vercel.app',
   'https://energy-portal-stage.vercel.app',
+  'https://enerjipost.com',
+  'https://www.enerjipost.com',
 ]
 
 export function applyCors(req: NextApiRequest, res: NextApiResponse) {
