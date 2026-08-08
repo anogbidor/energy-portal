@@ -15,8 +15,22 @@ import PriceTicker from '../components/PriceTicker'
 
 export default function Home() {
   const { news, loading, error } = useNewsFeed()
-  const featuredNews = useMemo(() => news?.slice(0, 3) || [], [news])
-  const moreNews = useMemo(() => news?.slice(3, 9) || [], [news])
+  // The prominent carousel prioritizes items that actually have an
+  // image (currently Bloomberg HT / CNN Türk -- OilPrice's feed has no
+  // per-article images at all) so the homepage's headline section
+  // always looks visually rich, not a mix of photos and blank cards.
+  // The list below still shows everything, image or not.
+  const featuredNews = useMemo(() => {
+    const withImages = (news ?? []).filter((item) => item.imageUrl)
+    // Falls back to the plain top-3 only if literally nothing has an
+    // image (e.g. both Turkish sources briefly down) -- otherwise a
+    // real "no news" empty state would show even though news exists.
+    return (withImages.length > 0 ? withImages : news ?? []).slice(0, 3)
+  }, [news])
+  const moreNews = useMemo(() => {
+    const featuredLinks = new Set(featuredNews.map((item) => item.link))
+    return (news ?? []).filter((item) => !featuredLinks.has(item.link)).slice(0, 6)
+  }, [news, featuredNews])
   const [currentSlide, setCurrentSlide] = useState(0)
 
   // Auto-rotate slides
