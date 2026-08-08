@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { applyCors } from '@/lib/cors'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { notifyOwner } from '@/lib/email'
 
 type Data = { success: true } | { success: false; error: string }
 
@@ -32,6 +33,11 @@ export default async function handler(
       .upsert({ email }, { onConflict: 'email', ignoreDuplicates: true })
 
     if (error) throw error
+
+    await notifyOwner(
+      'Yeni bülten aboneliği',
+      `${email} bültene abone oldu.`
+    )
 
     return res.status(200).json({ success: true })
   } catch (error) {

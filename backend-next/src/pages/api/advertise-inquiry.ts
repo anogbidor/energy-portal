@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { applyCors } from '@/lib/cors'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { notifyOwner } from '@/lib/email'
 
 type Data = { success: true } | { success: false; error: string }
 
@@ -39,6 +40,11 @@ export default async function handler(
       .insert({ name, email, company, message })
 
     if (error) throw error
+
+    await notifyOwner(
+      `Yeni reklam talebi: ${name}`,
+      `Ad: ${name}\nE-posta: ${email}\nŞirket: ${company ?? '-'}\n\nMesaj:\n${message}`
+    )
 
     return res.status(200).json({ success: true })
   } catch (error) {

@@ -71,9 +71,13 @@ export default function PrivacyPolicy() {
               Verilerin saklanması
             </h2>
             <p>
-              Bülten kayıtları, veritabanı sağlayıcımız Supabase üzerinde
-              saklanır. Herhangi bir zamanda kaydınızın silinmesini talep
-              edebilirsiniz.
+              Bülten ve reklam talebi kayıtları, veritabanı sağlayıcımız
+              Supabase üzerinde saklanır. Bu formlardan birini
+              doldurduğunuzda, e-posta sağlayıcımız Resend aracılığıyla
+              bilgilendirme amaçlı bir e-posta gönderilir; Resend bu işlem
+              sırasında e-posta içeriğini iletir, verilerinizi başka bir
+              amaçla kullanmaz. Herhangi bir zamanda kaydınızın silinmesini
+              talep edebilirsiniz.
             </p>
           </section>
 
